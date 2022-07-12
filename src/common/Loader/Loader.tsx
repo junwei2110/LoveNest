@@ -16,7 +16,7 @@ export const Loader = ({
     loaderSize="large"
     }: LoaderProps) => (
         
-        <LoaderView fullScreen>
+        <LoaderView fullScreen={fullScreen}>
             <ActivityIndicator size={loaderSize} color={loaderColor} />
         </LoaderView>
 
