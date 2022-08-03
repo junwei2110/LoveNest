@@ -16,4 +16,6 @@ export type UserStackParamList = {
 export type UserOverallStackParamList = {
   UserProfile: undefined;
   UserApp: undefined;
+  SetUpProfile: undefined;
+  PhotoModal: undefined;
 };

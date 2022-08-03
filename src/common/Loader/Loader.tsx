@@ -1,5 +1,5 @@
 import React from 'react';
-import  { ActivityIndicator, Modal } from "react-native";
+import  { ActivityIndicator } from "react-native";
 import { LoaderView } from "./styled";
 
 

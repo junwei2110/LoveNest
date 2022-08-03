@@ -4,7 +4,7 @@ import BouncyCheckbox from "react-native-bouncy-checkbox";
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Parse from "parse/react-native.js";
 
-import { userLogin } from '../../data/actions';
+import { userLoggingInit, userLogin, userLoginFailure } from '../../data/actions';
 import { LoginTextInput, LoginImage, LoginButton } from './styled';
 import type { LoginStackParamList } from '../../../types';
 import { Store } from '../../data';
@@ -17,17 +17,22 @@ export const LoginForm = ({navigation}: {navigation: Props['navigation']}) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const doUserLogin = () => {
+    const doUserLogin = async () => {
+
+        dispatch(userLoggingInit());
+
         const usernameVal = username;
         const passwordVal = password;
 
         Parse.User.logIn(usernameVal, passwordVal)
-            .then(async (loggedInUser) => {
-                const currentUser = Parse.User.currentAsync();
-                console.log(currentUser)
+            .then((loggedInUser) => {
+                const currentUser = loggedInUser;
+                console.log(currentUser);
+                //await Parse.User.currentAsync();
                 dispatch(userLogin(currentUser));
             }).catch((e) => {
                 Alert.alert('Error!', e.message);
+                dispatch(userLoginFailure());
                 return false;
             })
     }

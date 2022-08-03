@@ -6,34 +6,30 @@
  * @flow strict-local
  */
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Camera } from 'react-native-vision-camera';
+import { Alert } from 'react-native';
 
-import { credentials, serverUrl } from './src/models/enum';
 import { BaseIcon } from './src/common/icons/BaseIcon';
 import { HomePage } from './src/components/HomePage';
 import { Stories } from './src/components/Stories';
 import { MediaSearch } from './src/components/MediaSearch';
 import { DatePlanner } from './src/components/DatePlanner';
 import { UserProfile } from './src/components/UserProfile';
+import { PhotoModal } from './src/components/UserProfile/PhotoModal';
+import { SetUpProfileTabs } from './src/components/UserProfile/SetUpTabs';
 import { UserIcon } from './src/components/UserProfile/Icon';
 import { LoginPage } from "./src/components/Login";
 import { SignUpPage } from "./src/components/SignUp";
 import { Loader } from "./src/common/Loader/Loader";
-
 import { Store } from './src/data';
 import { userLogin } from './src/data/actions';
 
 import { LoginStackParamList, UserStackParamList, UserOverallStackParamList } from './types';
-
-Parse.setAsyncStorage(AsyncStorage);
-Parse.initialize(credentials.APP_ID, credentials.JS_KEY);
-Parse.serverURL = serverUrl.back4app;
-
 
 const TabLogin = createNativeStackNavigator<LoginStackParamList>();
 const TabUserOverall = createNativeStackNavigator<UserOverallStackParamList>();
@@ -48,9 +44,22 @@ const App = () => {
     const getCurrentUser = async () => {
       const user = await Parse.User.currentAsync();
       dispatch(userLogin(user));
-    }
+    };
+    const checkCameraPermission = async () => {
+      let status = await Camera.getCameraPermissionStatus();
+      if (status !== 'authorized') {
+        await Camera.requestCameraPermission();
+        status = await Camera.getCameraPermissionStatus();
+        if (status === 'denied') {
+          Alert.alert(
+            'You will not be able to take pictures within this app',
+          );
+        }
+      }
+    };
     
     getCurrentUser();
+    checkCameraPermission();
       
   }, []);
 
@@ -69,6 +78,14 @@ const App = () => {
           })}>
           <TabUserOverall.Screen name="UserApp" component={UserApp} />
           <TabUserOverall.Screen name="UserProfile" component={UserProfile} />
+          <TabUserOverall.Screen name="SetUpProfile" component={SetUpProfileTabs} 
+          options={{ 
+            presentation: 'modal', 
+            headerShown: false}}/>
+          <TabUserOverall.Screen name="PhotoModal" component={PhotoModal} 
+          options={{ 
+            presentation: 'modal', 
+            headerShown: false}}/>
         </TabUserOverall.Navigator>
         ) : (
         <TabLogin.Navigator>

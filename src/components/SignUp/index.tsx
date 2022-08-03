@@ -29,7 +29,8 @@ export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
         const signUpAddParams = {
             email: usernameVal,
             avatarName: avatarNameVal,
-            partnerId: partnerVal
+            partnerId: partnerVal,
+            firstTimerProfile: true
         }
 
         Parse.User.signUp(usernameVal, passwordVal, signUpAddParams)
