@@ -99,7 +99,7 @@ export const TabTextInput = styled.TextInput`
     border-width: 1px;
     border-radius: 15px;
     margin-top: 20%;
-    margin-bottom: 30%;
+    margin-bottom: 5%;
     width: 80%;
     text-align: center;
 `
@@ -163,7 +163,7 @@ export const CloseButton = styled.Image<CloseButtonProps>`
     width: ${props => props.small ? "15px" : "25px"};
     margin-left: 15px;
     margin-top: ${props => props.small ? "10px" : 0};
-    margin-bottom: ${props => props.small ? "-20px": 0};
+    
 `
 
 export const DateAdditionButton = styled.TouchableOpacity`
@@ -179,3 +179,33 @@ export const ImportantDatesView = styled.ScrollView.attrs({
         }
 })``
 
+export const ConfirmationModalOverallView = styled.View`
+    margin: 25% 5%;
+    background-color: white;
+    height: 75%;
+    border-radius: 10px;
+    border-width: 3px;
+    
+`
+
+
+export const ConfirmationModalView = styled.ScrollView.attrs({
+    contentContainerStyle: {
+            flexGrow: 1,
+            flexDirection: 'column', 
+            
+        }
+})``
+
+
+export const ConfirmationText = styled.TextInput`
+    border-width: 1px;
+    width: 80%;
+    border-radius: 20px;
+    text-align: center;
+`
+export const ConfirmationTextView = styled.View`
+    width: 100%;
+    align-items: center;
+    
+`

@@ -63,29 +63,26 @@ export const PhotoModal = () => {
     }
 
     const setProfilePic = async () => {
-   
-        try {
-            const userClass = new Parse.Object("_User");
-            currentUser && userClass.set('objectId', currentUser.id);
+        if (currentUser) {
+            try {
 
-            const base64ProfilePic = await RNFS.readFile(takenPhotoUri, 'base64');
-            const parseFile = new Parse.File("profilePic", {base64: base64ProfilePic});
-            const responseFile = await parseFile.save();
-            userClass.set('profilePic', responseFile);
-            currentUser && currentUser.set('profilePic', responseFile);
-            await userClass.save();
-            //setNewPhoto(takenPhotoUri);
-            //TODO: Loading Screen to show uploading in process
-            //TODO: Toast message to say picture is saved
-            //TODO: Save Image in global store
-            handleGoBack();
-            console.log("Picture saved!");
+                const base64ProfilePic = await RNFS.readFile(takenPhotoUri, 'base64');
+                const parseFile = new Parse.File("profilePic", {base64: base64ProfilePic});
+                const responseFile = await parseFile.save();
+                currentUser.set('profilePic', responseFile);
+                await currentUser.save();
+                setNewPhoto(takenPhotoUri);
+                //TODO: Loading Screen to show uploading in process
+                //TODO: Toast message to say picture is saved
+                handleGoBack();
+                console.log("Picture saved!");
 
-        } catch(e: any) {
-            console.log(e.message);
-            console.log("Picture failed to save. Please try again");
-            setIsVisible(false);
+            } catch(e: any) {
+                console.log(e.message);
+                console.log("Picture failed to save. Please try again");
+                setIsVisible(false);
 
+            }
         }                     
     } 
 

@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { Text, Button, View, TextInput, Modal, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { Text, Button, View, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 import DatePicker from 'react-native-date-picker';
+import Parse from "parse/react-native.js";
 
 
 import { 
@@ -22,31 +23,59 @@ import {
     ImportantDatesView,
 } from './styled';
 import { ConfirmProfileInput } from './ConfirmProfileInput';
+import { RadioButtonArray } from '../../common/RadioButtons';
 
 export type ProfileInputs = {
     name: string;
     partnerEmail: string;
-    bdate: string;
-    annidate: string;
+    partnerId?: string;
+    bdate: DateObj;
+    annidate: DateObj;
+    importantDates?: DateObj[];
 }
 
-type DateObj = {
-    title: string;
+type recurrence = "One-Time" | "Week" | "Month" | "Annual";
+
+export type DateObj = {
+    title?: string;
     createdAt: Date;
-    date: Date;
+    date?: Date;
+    recurrence?: recurrence;
 }
 
 export const SetUpProfileTabs = () => {
 
     const navigation = useNavigation();
-    const [bdate, setBirthDate] = useState(new Date());
-    const [annidate, setAnniDate] = useState(new Date());
+    const [bdate, setBirthDate] = useState<DateObj>({
+        title: "Birthday",
+        createdAt: new Date(),
+        recurrence: "Annual"
+    });
+    const [annidate, setAnniDate] = useState<DateObj>({
+        title: "Anniversary",
+        createdAt: new Date(),
+        recurrence: "Annual"
+    });;
     const [name, setName] = useState("");
     const [partnerEmail, setpartnerEmail] = useState("");
+    const [partnerId, setpartnerId] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [importantDates, setImportantDates] = useState<DateObj[]>([]);
 
-    console.log("Parent");
+
+    const partnerIdChecker = async () => {
+        const partnerIdQuery = new Parse.Query(Parse.User);
+        partnerIdQuery.contains('email', partnerEmail);
+        const partnerIdQueryResult = await partnerIdQuery.find();
+        if (partnerIdQueryResult.length > 0) {
+            setpartnerId(partnerIdQueryResult[0].id);
+            Alert.alert('Partner Found!');            
+        } else {
+            Alert.alert('Partner Not Found! Please check again');  
+        }
+
+    };
+
     return (
         <>
             <ConfirmProfileInput
@@ -55,8 +84,10 @@ export const SetUpProfileTabs = () => {
             profileInputs={{
                 name: name,
                 partnerEmail: partnerEmail,
-                bdate: bdate.toDateString(),
-                annidate: annidate.toDateString()
+                partnerId: partnerId,
+                bdate: bdate,
+                annidate: annidate,
+                importantDates: importantDates
             }}
             />
             
@@ -68,12 +99,17 @@ export const SetUpProfileTabs = () => {
                 <TextTab
                 text={"What is your Partner's Email Address?"}  
                 handleChange={setpartnerEmail}
+                checker={partnerIdChecker}
                 />
                 <DateTab 
                 dateArray={importantDates} 
                 setDateArray={setImportantDates}
+                bdate={bdate}
+                annidate={annidate}
+                setBirthDate={setBirthDate}
+                setAnniDate={setAnniDate}
                 end={true}
-                handleModal={() => console.log("hello")}
+                handleModal={() => setModalVisible(true)}
                 />
             </Swiper>
             <CloseView>
@@ -88,9 +124,10 @@ export const SetUpProfileTabs = () => {
     )
 }
 
-const TextTab = ({text, handleChange, end, handleModal}: {
+const TextTab = ({text, handleChange, checker, end, handleModal}: {
     text: string;
     handleChange: (val: string) => void;
+    checker?: () => void;
     end?: boolean;
     handleModal?: (val: boolean) => void;
 }) => {
@@ -100,7 +137,14 @@ const TextTab = ({text, handleChange, end, handleModal}: {
             <TabTextInput 
             placeholder='You can always change it later'
             onChangeText={text => handleChange(text)}
+            autoCapitalize={"none"}
             />
+            {checker &&
+                <Button
+                title={"Check"} 
+                onPress={checker}
+                />
+            }
             {end && handleModal &&
                 <Button
                 title={"Confirm"} 
@@ -112,9 +156,13 @@ const TextTab = ({text, handleChange, end, handleModal}: {
 };
 
 
-const DateTab = ({dateArray, setDateArray, end, handleModal}:{
+const DateTab = ({dateArray, setDateArray, bdate, annidate, setBirthDate, setAnniDate, end, handleModal}:{
     dateArray: DateObj[];
     setDateArray: React.Dispatch<React.SetStateAction<DateObj[]>>;
+    bdate: DateObj;
+    annidate: DateObj;
+    setBirthDate: React.Dispatch<React.SetStateAction<DateObj>>;
+    setAnniDate: React.Dispatch<React.SetStateAction<DateObj>>;
     end?: boolean;
     handleModal?: (val: boolean) => void;
 }) => {
@@ -127,7 +175,7 @@ const DateTab = ({dateArray, setDateArray, end, handleModal}:{
         arrayOfDates.push({
             title: "",
             createdAt: new Date(),
-            date: new Date()
+            recurrence: "One-Time"
         });
         console.log(arrayOfDates);
         setDateArray(() => [...arrayOfDates]);
@@ -150,13 +198,21 @@ const DateTab = ({dateArray, setDateArray, end, handleModal}:{
             <DateTabTitle>
                 <Text>Set your Important Dates here!</Text>
             </DateTabTitle>
-            <DateTabComponent text={"Your Birthday!"} optional={false}  />
-            <DateTabComponent text={"Your Anniversary!"} optional={false} />
+            <DateTabComponent 
+                text={"Your Birthday!"} 
+                optional={false}
+                singleDate={bdate}
+                setDate={setBirthDate}  />
+            <DateTabComponent 
+                text={"Your Anniversary!"} 
+                optional={false} 
+                singleDate={annidate}
+                setDate={setAnniDate}/>
             {dateArray && dateArray.map((val, idx) => (
                 <DateTabComponent
                     key={val.createdAt.toISOString()}
                     index={idx+1} 
-                    dateValue={dateArray}
+                    dateArray={dateArray}
                     setDateArray={setDateArray}
                     optional={true}
                     handleRemove={handleRemoveDate} />
@@ -179,11 +235,13 @@ const DateTab = ({dateArray, setDateArray, end, handleModal}:{
 };
 
 
-const DateTabComponent = ({index, text, dateValue, setDateArray, optional, handleRemove}:{
+const DateTabComponent = ({index, text, dateArray, setDateArray, singleDate, setDate, optional, handleRemove}:{
     index?: number;
     text?: string;
-    dateValue?: DateObj[]; 
+    dateArray?: DateObj[]; 
     setDateArray?: React.Dispatch<React.SetStateAction<DateObj[]>>;
+    singleDate?: DateObj;
+    setDate?: React.Dispatch<React.SetStateAction<DateObj>>;
     optional: boolean;
     handleRemove?: (idx: number) => void;
 }) => {
@@ -191,33 +249,59 @@ const DateTabComponent = ({index, text, dateValue, setDateArray, optional, handl
     const [open, setOpen] = useState(false);
     const [initSetDate, setInitSetDate] = useState(false);
 
-    console.log("Datetabcomponent", dateValue);
-    console.log("Datetabcomponent", initSetDate);
-    const date = index && dateValue && dateValue[index-1].date;
-    const title = index && dateValue && dateValue[index-1].title;
+    let date;
+    let title;
+    let recurrence;
+    if (dateArray && index) {
+        date = dateArray[index-1].date;
+        title = dateArray[index-1].title;
+        recurrence = dateArray[index-1].recurrence;
+    } else if (singleDate) {
+        date = singleDate.date
+        title = singleDate.title;
+    }
     console.log("Date Tab Component");
 
-    const handleConfirm = (dateInput : Date) => {
+    const handleDateConfirm = (dateInput : Date) => {
         setInitSetDate(true);
-        setOpen(false)
-        console.log("outside functin");
-        if (dateValue && setDateArray && index) {
-            console.log("Hello within function");
-            const arrayOfDates = dateValue;
+        setOpen(false);
+        if (dateArray && setDateArray && index) {
+            const arrayOfDates = dateArray;
             arrayOfDates[index-1].date = dateInput;
             console.log(arrayOfDates);
             setDateArray(() => [...arrayOfDates]); 
+        } else if (singleDate && setDate) {
+            const newSingleDate = singleDate;
+            newSingleDate.date = dateInput;
+            setDate(() => ({...newSingleDate}));
         }
 
     }
 
     const handleTextChange = (text : string) => {
-        if (dateValue && setDateArray && index) {
-            console.log("Hello within function");
-            const arrayOfDates = dateValue;
+
+        if (dateArray && setDateArray && index) {
+            const arrayOfDates = dateArray;
             arrayOfDates[index-1].title = text;
             console.log(arrayOfDates);
             setDateArray(() => [...arrayOfDates]); 
+
+        } else if (singleDate && setDate) {
+            const newSingleDate = singleDate;
+            newSingleDate.title = text;
+            setDate(() => ({...newSingleDate}));
+        }        
+
+    }
+
+    const handleRecurrenceChange = (text : recurrence) => {
+
+        if (dateArray && setDateArray && index) {
+            const arrayOfDates = dateArray;
+            arrayOfDates[index-1].recurrence = text;
+            console.log(arrayOfDates);
+            setDateArray(() => [...arrayOfDates]); 
+        
         }
 
     }
@@ -235,11 +319,11 @@ const DateTabComponent = ({index, text, dateValue, setDateArray, optional, handl
                 mode={"date"}
                 open={open}
                 date={date || new Date()}
-                onConfirm={(dateInput) => {handleConfirm(dateInput)}}
+                onConfirm={(dateInput) => {handleDateConfirm(dateInput)}}
                 onCancel={() => {setOpen(false)}}
             />
             {optional &&
-            <TouchableOpacity onPress={handleRemoval}>
+            <TouchableOpacity onPress={handleRemoval} >
                 <CloseButton
                     small 
                     source={require("../../../assets/BaseApp/close.png")} 
@@ -258,17 +342,25 @@ const DateTabComponent = ({index, text, dateValue, setDateArray, optional, handl
                         />}
                 </DateTitleView>
                 <DateButtonView>
-                    {!initSetDate && <Button
-                    title={"Set Date"}
-                    onPress={() => setOpen(true)}
+                    {!initSetDate && 
+                    <Button
+                        title={"Set Date"}
+                        onPress={() => setOpen(true)}
                     />}
                     {initSetDate && date && 
                     <Button
-                    title={date.toDateString()}
-                    onPress={() => setOpen(true)}
+                        title={date.toDateString()}
+                        onPress={() => setOpen(true)}
                     />}
                 </DateButtonView>
             </DateSpanView>
+            {optional && recurrence && 
+            <RadioButtonArray 
+            valueArray={["One-Time", "Week", "Month", "Annual"]}
+            value={recurrence}
+            setValue={handleRecurrenceChange}
+            orientation={"horizontal"}
+            />}
             <View
                 style={{
                 borderBottomColor: 'black',

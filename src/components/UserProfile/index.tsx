@@ -31,15 +31,12 @@ export const UserProfile = () => {
     const [globalState, dispatch] = useContext(Store);
     const { currentUser } = globalState;
     const firstTimerProfile = currentUser && currentUser.get("firstTimerProfile");
-    //const [loading, setLoading] = useState(true);
     const [isVisible, setIsVisible] = useState(false);
-    //const [firstTimerProfile, setFirstTimerProfile] = useState<Boolean|null>(null);
-    const [firstTimerRelationship, setFirstTimerRelationship] = useState<Boolean|null>(null);
     
     const dummyProfilePic = require("../../../assets/BaseApp/account.png");
     const dummyProfilePicUri = Image.resolveAssetSource(dummyProfilePic).uri;
-    const photoPath = currentUser && currentUser.get("profilePic").url() || dummyProfilePicUri;
-    const [_, setPhotoPath] = useState("");
+    const currentProfilePicPath = currentUser && currentUser.get("profilePic").url() || dummyProfilePicUri;
+    const [photoPath, setPhotoPath] = useState(currentProfilePicPath);
 
     const devices = useCameraDevices();
     const device = devices.front;
@@ -54,7 +51,7 @@ export const UserProfile = () => {
         checkCameraPermission();
     }, [camPermStatus]);
 
-    /*
+    /* Not required
     useEffect(() => {
 
         const getUserDetails = async () => {
@@ -82,30 +79,28 @@ export const UserProfile = () => {
             includeBase64: true,
           };
         ImagePicker.launchImageLibrary(options, async (response) => {
-            if (response.uri && response.base64) {
+            if (response.uri && response.base64 && currentUser) {
             
-            //setPhotoPath(response.uri);
-            console.log(response.uri);
-
-            const parseFile = new Parse.File("ProfilePic", {base64: response.base64});
-            console.log(parseFile)
-            try {
-                const responseFile = await parseFile.save();
-                console.log(responseFile)
-                const userClass = new Parse.Object("_User");
-                currentUser && userClass.set('objectId', currentUser.id);
-                userClass.set('profilePic', responseFile);
-    
-                await userClass.save();
-                //TODO: Loading Screen to show uploading in process
-                //TODO: Toast message to say picture is saved
-                //TODO: Save Image in global store
-                console.log("Picture saved!");
+                console.log(response.uri);
                 
-            } catch {
-                console.log("Picture failed to save. Please try again");
-                Alert.alert("Picture failed to save. Please try again");
-            }
+                const parseFile = new Parse.File("ProfilePic", {base64: response.base64});
+                console.log(parseFile)
+                try {
+                    const responseFile = await parseFile.save();
+                    console.log(responseFile)
+                    currentUser.set('profilePic', responseFile);
+                    console.log(currentUser);
+
+                    //TODO: Loading Screen to show uploading in process
+                    //TODO: Toast message to say picture is saved
+                    await currentUser.save();
+                    setPhotoPath(response.uri);
+                    Alert.alert("Picture saved!");
+                    
+                } catch {
+                    console.log("Picture failed to save. Please try again");
+                    Alert.alert("Picture failed to save. Please try again");
+                }
         }
         });
 
