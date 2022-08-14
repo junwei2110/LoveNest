@@ -10,10 +10,9 @@ export const reducer = (state: IState, action: Action): IState => {
           loading: true,
         }
       case action_types.USER_LOGIN:
-        const {payload} = action;
         return {
           ...state,
-          currentUser: payload,
+          currentUser: action.payload,
           loading: false,
         }
       case action_types.USER_LOGIN_FAIL:
@@ -26,6 +25,11 @@ export const reducer = (state: IState, action: Action): IState => {
           ...state,
           currentUser: null,
           loading: false,
+        }
+      case action_types.RETRIEVE_REMINDERS:
+        return {
+          ...state,
+          reminderArray: action.payload
         }
       default:
         return state;

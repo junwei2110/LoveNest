@@ -6,6 +6,7 @@ import { credentials, serverUrl } from './src/models/enum';
 import App from "./App";
 import { Store, initialState } from './src/data';
 import { reducer } from './src/data/reducers';
+import { GlobalLoader } from './src/components/GlobalLoader';
 
 Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize(credentials.APP_ID, credentials.JS_KEY);
@@ -19,6 +20,7 @@ const Providers = () => {
   return (
     <>
       <Store.Provider value={[globalState, dispatch]}>
+          <GlobalLoader />
           <App />
       </Store.Provider>
     </>

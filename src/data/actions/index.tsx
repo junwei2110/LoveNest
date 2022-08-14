@@ -18,3 +18,8 @@ export const userLogout = (): Action => ({
 export const userLoginFailure = (): Action => ({
     type: action_types.USER_LOGIN_FAIL,
 });
+
+export const retrieveReminders = (array: Parse.Object<Parse.Attributes>[]): Action => ({
+    type: action_types.RETRIEVE_REMINDERS,
+    payload: array
+});

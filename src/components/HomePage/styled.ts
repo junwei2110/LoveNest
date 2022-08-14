@@ -1,7 +1,14 @@
 import styled from 'styled-components/native';
 
-export const HomeView = styled.View`
-    flex:1;
-    justify-content: center;
-    align-items: center;
-`;
+
+export const EventsView = styled.ScrollView.attrs({
+    contentContainerStyle: {
+            flexGrow: 1,
+            flexDirection: 'row',
+            justifyContent: 'center',
+
+                 
+        },
+    margin: 10,
+
+})``

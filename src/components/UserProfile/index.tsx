@@ -7,7 +7,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from "react-native-image-picker"
 import { MediaType } from 'react-native-image-picker';
 
-import { Loader } from '../../common/Loader/Loader';
 import { SetUpProfilePicView, ImageBox2, ProfilePic, ProfilePicUpdateBox, CloseView, CloseButton } from "./styled";
 
 import { userLoggingInit, userLogout } from '../../data/actions';
@@ -114,10 +113,9 @@ export const UserProfile = () => {
     };
 
 
-    //{loading && <Loader />}
+
     return (
-        <>
-            
+        <> 
             <Modal visible={isVisible}>
                 <ProfilePic
                     source={{uri: photoPath}}

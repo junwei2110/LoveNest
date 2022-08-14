@@ -25,7 +25,6 @@ import { SetUpProfileTabs } from './src/components/UserProfile/SetUpTabs';
 import { UserIcon } from './src/components/UserProfile/Icon';
 import { LoginPage } from "./src/components/Login";
 import { SignUpPage } from "./src/components/SignUp";
-import { Loader } from "./src/common/Loader/Loader";
 import { Store } from './src/data';
 import { userLogin } from './src/data/actions';
 
@@ -63,10 +62,6 @@ const App = () => {
       
   }, []);
 
-
-  if (loading) {
-    return <Loader />
-  };
 
   return (
     <>

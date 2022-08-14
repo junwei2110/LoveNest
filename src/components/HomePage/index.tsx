@@ -1,9 +1,10 @@
 import React from 'react';
-import { Text, Button } from 'react-native';
+import { Text, Button, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 
-import { HomeView } from './styled';
+import { CalendarView } from './Calendar';
+
 
 
 export const HomePage = () => {
@@ -13,8 +14,8 @@ export const HomePage = () => {
     const device = devices.front;
 
     return (
-        <HomeView>
-            <Text>Home</Text>
-        </HomeView>
+        <>
+            <CalendarView />
+        </>
     )
 }
