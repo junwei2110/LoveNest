@@ -6,6 +6,7 @@ import { Store } from '../../data';
 import { retrieveReminders } from '../../data/actions';
 import { EventsView } from './styled';
 import { getReminders, sortReminders } from './homePageHelper';
+import { EventModal } from './EventModal';
 import { InPageModal } from '../../common/InPageModal';
 import { CloseButton } from '../../common/CustomButton/CloseButton';
 import { Loader } from '../../common/Loader/Loader';
@@ -16,6 +17,7 @@ export const CalendarView = () => {
     const [loading, setLoading] = useState(true);
     const [createNewVisible, setNewVisible] = useState(false);
     const [currentVisible, setCurrentVisible] = useState(false);
+    const [currentRem, setCurrentRem] = useState<Parse.Object<Parse.Attributes> | null>(null);
     const [globalState, dispatch] = useContext(Store);
 
 
@@ -33,27 +35,36 @@ export const CalendarView = () => {
             setLoading(false);
         }
         remindersArrayRetrieval();
-    }, [])
+    }, []);
+
+
+    const handleCurrentEvent = (reminder: Parse.Object<Parse.Attributes>) => {
+        setCurrentVisible(true);
+        setCurrentRem(reminder);
+
+    }
 
     //TODO: Setup the elements for new event and current event
     return (
         <>
         <InPageModal
-            visible={createNewVisible}>
+            visible={createNewVisible}
+            size={90}>
             <>
                 <CloseButton
                 handleModal={() => setNewVisible(false)}
                 small={true} />
-                <Text>Hello</Text>
+                <EventModal reminder={null} />
             </>
         </InPageModal>
         <InPageModal
-            visible={currentVisible}>
+            visible={currentVisible}
+            size={90}>           
             <>
                 <CloseButton
                 handleModal={() => setCurrentVisible(false)}
                 small={true} />
-                <Text>Bye</Text>
+                <EventModal reminder={currentRem} />
             </>
         </InPageModal>
         <View>
@@ -61,13 +72,17 @@ export const CalendarView = () => {
     
             <EventsView horizontal>
                 {loading && <Loader fullScreen={false} screenOpacity={'transparent'}/>}
-                {reminderArray && reminderArray.map((reminder, idx) => (
-                    <EventTab
-                    key={idx}
-                    handleModal={() => setCurrentVisible(true)} 
-                    reminder={reminder}
-                    />
+                {reminderArray && reminderArray.length &&
+                    reminderArray.map((reminder, idx) => (
+                        <EventTab
+                        key={idx}
+                        handleModal={() => handleCurrentEvent(reminder)} 
+                        reminder={reminder}
+                        />
                 ))}
+                {reminderArray && !reminderArray.length &&
+                    <Text>Oh it seems like you do not have any upcoming Events</Text>
+                }
             </EventsView>
 
             <TouchableOpacity onPress={() => setNewVisible(true)}>

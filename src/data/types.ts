@@ -8,10 +8,14 @@ export interface IState {
 };
   
 export type Action = 
-    LoggingAction | LoginAction | LoginActionFail | LogoutAction | RetrieveReminders; //Add more actions here
+    LoggingAction | LoggingActionEnd | LoginAction | LoginActionFail | LogoutAction | RetrieveReminders; //Add more actions here
 
 export type LoggingAction = {
     type: action_types.USER_LOGGING_INIT;
+};
+
+export type LoggingActionEnd = {
+    type: action_types.USER_LOGGING_END;
 };
 
 export type LoginAction = {

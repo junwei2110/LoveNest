@@ -6,7 +6,7 @@ type RadioButtonProps = {
     valueArray: string[] | number[];
     value: string | number;
     setValue: (val: any) => void;
-    orientation: string;
+    orientation: 'vertical'|'horizontal';
 }
 
 type viewStyles = {
@@ -17,6 +17,7 @@ type viewStyles = {
     marginRight?: number;
     marginTop?: number;
     marginBottom?: number;
+    height?: string;
 
 }
 
@@ -35,7 +36,8 @@ type buttonStyles = {
 }
 
 type Styles = {
-    view: viewStyles;
+    viewHorizontal: viewStyles;
+    viewVertical: viewStyles;
     button: buttonStyles;
     activeButton: buttonStyles;
 }
@@ -44,19 +46,28 @@ export const RadioButtonArray = ({valueArray, value, setValue, orientation} : Ra
 
 
     const styles: Styles = {
-        view: {
+        viewHorizontal: {
             display: "flex",
             flexDirection: orientation === "vertical" ? "column" : "row",
             marginLeft: 10,
             marginRight: 10,
-            marginBottom: 10
+            marginBottom: 10,
+        },
+        viewVertical: {
+            display: "flex",
+            flexDirection: orientation === "vertical" ? "column" : "row",
+            marginLeft: 10,
+            marginRight: 10,
+            marginBottom: 10,
+            height: "80%",
         },
         button: {
             flex: 1,
             borderWidth: 1,
             borderRadius: 25,
             margin: 5,
-            alignItems: "center"
+            alignItems: "center",
+            justifyContent: "center"
         
         },
         activeButton: {
@@ -65,14 +76,15 @@ export const RadioButtonArray = ({valueArray, value, setValue, orientation} : Ra
             backgroundColor: "orange",
             borderRadius: 25,
             margin: 5,
-            alignItems: "center"
+            alignItems: "center",
+            justifyContent: "center"
         }
 
         
     }
     
     return (
-        <View style={styles.view}>
+        <View style={orientation === "horizontal" ? styles.viewHorizontal : styles.viewVertical}>
             {valueArray.map((val) => (
                 <RadioButton 
                     text={val.toString()}

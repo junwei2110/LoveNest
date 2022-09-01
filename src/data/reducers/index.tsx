@@ -9,6 +9,11 @@ export const reducer = (state: IState, action: Action): IState => {
           ...state,
           loading: true,
         }
+      case action_types.USER_LOGGING_END:
+          return {
+            ...state,
+            loading: false,
+          }
       case action_types.USER_LOGIN:
         return {
           ...state,

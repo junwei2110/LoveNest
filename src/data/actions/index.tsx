@@ -6,6 +6,10 @@ export const userLoggingInit = (): Action => ({
     type: action_types.USER_LOGGING_INIT,
 });
 
+export const userLoggingEnd = (): Action => ({
+    type: action_types.USER_LOGGING_END,
+});
+
 export const userLogin = (currentUser: User): Action => ({
     type: action_types.USER_LOGIN,
     payload: currentUser
