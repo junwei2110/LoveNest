@@ -15,20 +15,21 @@ import {
 import { InPageModal } from '../../common/InPageModal';
 import { RadioButtonArray } from '../../common/RadioButtons';
 import { Store } from '../../data';
-import { userLoggingEnd, userLoggingInit } from '../../data/actions';
+import { userLoggingEnd, userLoggingInit, updateReminders } from '../../data/actions';
 
 
 export const EventModal = ({reminder}: {
-    reminder: Parse.Object<Parse.Attributes>|null}) => {
+    reminder: GlobalReminderObj|null}) => {
 
     const [globalState, dispatch] = useContext(Store);
-    const { currentUser } = globalState;
-    const userVisible = currentUser?.id === reminder?.get('userOrCoupleId') ? "User" : "Couple"; 
-    const checklistItems: ChecklistItem[] = reminder?.get('checkItems') || [];
+    const { currentUser, reminderArray } = globalState;
+    const userVisible = currentUser?.id === reminder?.userOrCoupleId ? "User" : "Couple"; 
+    const checklistItems: ChecklistItem[] = reminder?.checkItems || [];
 
-    const [title, setTitle] = useState(reminder?.get('title') || "");
-    const [dateTime, setDateTime] = useState(reminder?.get('dateTime') || "");
-    const [recurrence, setRecurrence] = useState(reminder?.get('recurrence') || "");
+    const [id, _setId] = useState(reminder?.id || "");
+    const [title, setTitle] = useState(reminder?.title || "");
+    const [dateTime, setDateTime] = useState(reminder?.dateTime.toDateString() || "");
+    const [recurrence, setRecurrence] = useState(reminder?.recurrence || "");
     const [indiv, setIndividual] = useState(userVisible);
     const [checkItems, setCheckItems] = useState(checklistItems);
     const [dateModal, setDateModal] = useState(false);
@@ -115,27 +116,68 @@ export const EventModal = ({reminder}: {
     //TODO: Update the reminder array in the Store
     const handleUpdate = async () => {
         dispatch(userLoggingInit());
-        let reminderObj;
+        let reminderParseObj: Parse.Object<Parse.Attributes>;
+        let reminderObj: GlobalReminderObj = {
+            title,
+            dateTime: new Date(dateTime),
+            recurrence,
+            userOrCoupleId: "",
+            checkItems,
+            completionStatus: false
+        };
 
         if (!reminder) {
-            reminderObj = new Parse.Object('Reminder');
-            reminderObj.set('completionStatus', false);
+            reminderParseObj = new Parse.Object('Reminder');
+            reminderParseObj.set('completionStatus', false);
         } else {
-            reminderObj = reminder;
-        }
-        reminderObj.set('title', title);
-        reminderObj.set('dateTime', dateTime);
-        reminderObj.set('recurrence', recurrence);
-
-        if (indiv === "User") {
-            reminderObj.set('userOrCoupleId', currentUser?.id);
-        } else {
-            reminderObj.set('userOrCoupleId', currentUser?.get('coupleId'));
+            const reminderParseQuery = new Parse.Query("Reminder");
+            reminderParseQuery.equalTo("objectId", id);
+            reminderParseObj = await reminderParseQuery.first() || new Parse.Object('Reminder');
         }
         
-        reminderObj.set('checkItems', checkItems);
+
+        if (indiv === "User") {
+            reminderParseObj.set('userOrCoupleId', currentUser?.id);
+            reminderObj = { ...reminderObj, userOrCoupleId: currentUser?.id };
+        } else {
+            reminderParseObj.set('userOrCoupleId', currentUser?.get('coupleId'));
+            reminderObj = { ...reminderObj, userOrCoupleId: currentUser?.get('coupleId') };
+        }
+        reminderParseObj.set('title', title);
+        reminderParseObj.set('dateTime', dateTime);
+        reminderParseObj.set('recurrence', recurrence);
+        reminderParseObj.set('checkItems', checkItems);
+        
         try {         
-            await reminderObj.save();
+            const updatedArr = reminderArray && [...reminderArray] || [];
+
+            if (updatedArr.length) {
+                if (!reminder) {
+                    //TODO: Use binary sort here
+                    const reminderObjDateTime = new Date(dateTime);
+                    for (let i=0; i < updatedArr.length; i++) {
+                        const arrDate = new Date(updatedArr[i]?.dateTime);
+                        if (arrDate >= reminderObjDateTime) {
+                            updatedArr.splice(i, 0, reminderObj);
+                            break;
+                        }
+                    }
+                } else {
+                    for (let j=0; j < updatedArr.length; j++) {
+                        if (updatedArr[j].id === reminderParseObj.id) {
+                            updatedArr[j] = reminderObj;
+                            break;
+                        }
+                    }
+                }
+
+            } else {
+                updatedArr.push(reminderObj);
+            }
+            dispatch(updateReminders(updatedArr));
+            await reminderParseObj.save();
+            console.log(updatedArr)
+            
             dispatch(userLoggingEnd());
             Alert.alert("Reminder Saved");
         } catch(e: any) {
@@ -318,7 +360,17 @@ export const EventModal = ({reminder}: {
     )
 }
 
-type ChecklistItem = {
+export type GlobalReminderObj = {
+    id?: string;
+    title: string;
+    dateTime: Date;
+    recurrence: string;
+    userOrCoupleId: string;
+    checkItems?: ChecklistItem[];
+    completionStatus: boolean;
+}
+
+export type ChecklistItem = {
     id: string;
     task: string;
     isChecked: boolean;

@@ -4,12 +4,13 @@ import styled, { css } from 'styled-components/native';
 export const EventsView = styled.ScrollView.attrs({
     contentContainerStyle: {
             flexGrow: 1,
-            flexDirection: 'row',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: "100%"
                  
         },
-    margin: 10,
-
+    marginBottom: 15,
+    
 })``
 
 export const EventModalView = styled.View`

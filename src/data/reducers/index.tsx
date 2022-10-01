@@ -36,6 +36,11 @@ export const reducer = (state: IState, action: Action): IState => {
           ...state,
           reminderArray: action.payload
         }
+      case action_types.UPDATE_REMINDERS:
+        return {
+          ...state,
+          reminderArray: action.payload
+        }
       default:
         return state;
     }

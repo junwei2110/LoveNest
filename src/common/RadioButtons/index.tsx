@@ -85,8 +85,9 @@ export const RadioButtonArray = ({valueArray, value, setValue, orientation} : Ra
     
     return (
         <View style={orientation === "horizontal" ? styles.viewHorizontal : styles.viewVertical}>
-            {valueArray.map((val) => (
+            {valueArray.map((val, id) => (
                 <RadioButton 
+                    key={id}
                     text={val.toString()}
                     setValue={setValue}
                     style={val === value ? styles.activeButton : styles.button}

@@ -1,4 +1,5 @@
 import { User } from '../../../types';
+import { GlobalReminderObj } from '../../components/HomePage/EventModal';
 import { Action } from '../types';
 import { action_types } from './enum'
 
@@ -23,7 +24,12 @@ export const userLoginFailure = (): Action => ({
     type: action_types.USER_LOGIN_FAIL,
 });
 
-export const retrieveReminders = (array: Parse.Object<Parse.Attributes>[]): Action => ({
+export const retrieveReminders = (array: GlobalReminderObj[]): Action => ({
     type: action_types.RETRIEVE_REMINDERS,
+    payload: array
+});
+
+export const updateReminders = (array: GlobalReminderObj[]): Action => ({
+    type: action_types.UPDATE_REMINDERS,
     payload: array
 });
