@@ -1,5 +1,6 @@
 import React from 'react';
 import Parse from 'parse/react-native.js';
+import { ChecklistItem, GlobalReminderObj } from './EventModal';
 
 export const getReminders = async (currentUser: Parse.Attributes) => {
 
@@ -13,25 +14,42 @@ export const getReminders = async (currentUser: Parse.Attributes) => {
 
 };
 
+
 //TODO: Change the ParseDB to accept Date object, else need to convert the date obj to string and back to dateobj multiple times
 export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) => {
 
     if (reminderArray.length < 1) return [];
 
-    const modifiedRemArr = reminderArray.map((reminder) => {
+
+    const modifiedRemArr: GlobalReminderObj[] = reminderArray.map((reminder) => {
         
+        const id: string = reminder && reminder.id;
+        const title: string = reminder && reminder.get('title');
         const recurrence: string = reminder && reminder.get('recurrence');
+        const userOrCoupleId: string = reminder && reminder.get('userOrCoupleId');
         const dateTime: Date = reminder && new Date(reminder.get('dateTime'));
+        const checkItems: ChecklistItem[] = reminder && reminder.get('checkItems');
+        const completionStatus: boolean = reminder && reminder.get('completionStatus');
         const currentDateTime = new Date();
+
+        let newReminderObj: GlobalReminderObj = {
+            id,
+            title,
+            dateTime,
+            recurrence,
+            userOrCoupleId,
+            checkItems,
+            completionStatus,
+        }
 
         switch (recurrence) {
             case "One-Time":
                 if (dateTime.getTime() < currentDateTime.getTime()) {
                     reminder.set('completionStatus', true);
                     reminder.save().then(() => console.log("reminder saved"));
-                    return reminder;
                 } else {
-                    return reminder;
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
                 }
             case "Annual":
                 if (dateTime.getMonth() < currentDateTime.getMonth() || 
@@ -41,14 +59,20 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
                             const newYear = currentDateTime.getFullYear() + 1;
                             dateTime.setFullYear(newYear);
                             reminder.set('dateTime', dateTime.toDateString());
-                            return reminder;
+                            reminder.save();
+                            newReminderObj = {...newReminderObj, dateTime}
+                            //globalReminderObj.push(newReminderObj);
+                            return newReminderObj;
                             
                         } else {
 
                             const newYear = currentDateTime.getFullYear();
                             dateTime.setFullYear(newYear);
                             reminder.set('dateTime', dateTime.toDateString());
-                            return reminder;
+                            reminder.save();
+                            newReminderObj = {...newReminderObj, dateTime}
+                            //globalReminderObj.push(newReminderObj);
+                            return newReminderObj;
                         }
             
             case "Month":
@@ -58,7 +82,10 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
                     dateTime.setFullYear(currentDateTime.getFullYear());
                     dateTime.setMonth(newMonth);
                     reminder.set('dateTime', dateTime.toDateString());
-                    return reminder;
+                    reminder.save();
+                    newReminderObj = {...newReminderObj, dateTime}
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
 
                 } else {
 
@@ -66,34 +93,41 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
                     dateTime.setFullYear(currentDateTime.getFullYear());
                     dateTime.setMonth(newMonth);
                     reminder.set('dateTime', dateTime.toDateString());
-                    return reminder;
+                    reminder.save();
+                    newReminderObj = {...newReminderObj, dateTime}
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
                 }
             
             case "Week":
                 if (dateTime.getTime() < currentDateTime.getTime()) {
                     const diffMilliSec = currentDateTime.getTime() - dateTime.getTime();
                     const diffDay = Math.ceil(diffMilliSec/(7*24*3600*1000));
-                    const newDay = dateTime.getDate() + diffDay;
+                    const newDay = dateTime.getDate() + diffDay*7;
 
                     dateTime.setFullYear(currentDateTime.getFullYear());
                     dateTime.setMonth(currentDateTime.getMonth());
                     dateTime.setDate(newDay);
                     reminder.set('dateTime', dateTime.toDateString());
-                    return reminder;
+                    reminder.save();
+                    newReminderObj = {...newReminderObj, dateTime}
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
                 } else {
-                    return reminder;
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
                 }
 
             default:
-                return reminder;
+                //globalReminderObj.push(newReminderObj);
+                return newReminderObj;
         }
 
 
-    }).filter((reminder) => reminder.get('completionStatus') === false
-        ).sort((a,b) => {
-            const aDate: Date = new Date(a.get('dateTime'));
-            const bDate: Date = new Date(b.get('dateTime'));
-            return aDate.getTime() - bDate.getTime();
+    }).sort((a,b) => {
+            const aDate: Date = a?.dateTime;
+            const bDate: Date = b?.dateTime;
+            return aDate?.getTime() - bDate?.getTime();
         });
     
     return modifiedRemArr;

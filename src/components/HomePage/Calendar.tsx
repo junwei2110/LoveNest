@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
 import Parse from 'parse/react-native.js';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ViewStyle, TextStyle } from 'react-native';
 
 import { Store } from '../../data';
 import { retrieveReminders } from '../../data/actions';
 import { EventsView } from './styled';
 import { getReminders, sortReminders } from './homePageHelper';
+import { EventModal, GlobalReminderObj } from './EventModal';
 import { InPageModal } from '../../common/InPageModal';
 import { CloseButton } from '../../common/CustomButton/CloseButton';
 import { Loader } from '../../common/Loader/Loader';
@@ -16,6 +17,7 @@ export const CalendarView = () => {
     const [loading, setLoading] = useState(true);
     const [createNewVisible, setNewVisible] = useState(false);
     const [currentVisible, setCurrentVisible] = useState(false);
+    const [currentRem, setCurrentRem] = useState<GlobalReminderObj | null>(null);
     const [globalState, dispatch] = useContext(Store);
 
 
@@ -33,45 +35,56 @@ export const CalendarView = () => {
             setLoading(false);
         }
         remindersArrayRetrieval();
-    }, [])
+    }, []);
 
-    //TODO: Setup the elements for new event and current event
+
+    const handleCurrentEvent = (reminder: GlobalReminderObj) => {
+        setCurrentVisible(true);
+        setCurrentRem(reminder);
+
+    }
+
     return (
         <>
         <InPageModal
-            visible={createNewVisible}>
+            visible={createNewVisible}
+            size={90}>
             <>
                 <CloseButton
                 handleModal={() => setNewVisible(false)}
                 small={true} />
-                <Text>Hello</Text>
+                <EventModal reminder={null} />
             </>
         </InPageModal>
         <InPageModal
-            visible={currentVisible}>
+            visible={currentVisible}
+            size={90}>           
             <>
                 <CloseButton
                 handleModal={() => setCurrentVisible(false)}
                 small={true} />
-                <Text>Bye</Text>
+                <EventModal reminder={currentRem} />
             </>
         </InPageModal>
-        <View>
-            <Text style={styles.header}>Upcoming Events</Text>
-    
-            <EventsView horizontal>
+        <View style={styles.overallContainer as TextStyle}>
+            <Text style={styles.header as TextStyle}>Upcoming Events</Text>
+            <EventsView>
                 {loading && <Loader fullScreen={false} screenOpacity={'transparent'}/>}
-                {reminderArray && reminderArray.map((reminder, idx) => (
-                    <EventTab
-                    key={idx}
-                    handleModal={() => setCurrentVisible(true)} 
-                    reminder={reminder}
-                    />
+                {reminderArray && reminderArray.length &&
+                    reminderArray.map((reminder, idx) => (
+                        <EventTab
+                        key={idx}
+                        handleModal={() => handleCurrentEvent(reminder)} 
+                        reminder={reminder}
+                        />
                 ))}
+                {reminderArray && !reminderArray.length &&
+                    <Text>Oh it seems like you do not have any upcoming Events</Text>
+                }
             </EventsView>
 
             <TouchableOpacity onPress={() => setNewVisible(true)}>
-                <Text style={styles.footer}>Add a New Event</Text>
+                <Text style={styles.footer as TextStyle}>Add a New Event</Text>
             </TouchableOpacity>
         </View>
         </>
@@ -81,24 +94,29 @@ export const CalendarView = () => {
 }
 
 const EventTab = ({reminder, handleModal} : {
-    reminder: Parse.Object<Parse.Attributes>;
+    reminder: GlobalReminderObj;
     handleModal: () => void;
 }) => {
 
-    const title: string = reminder.get('title');
-    const dateTime: string = reminder.get('dateTime');
+    const title: string = reminder?.title;
+    const dateTime: string = reminder?.dateTime?.toDateString();
 
 
     return (
         <TouchableOpacity onPress={handleModal}>
-            <View style={styles.body}>
+            <View 
+            style={styles.body as ViewStyle}>
                 <Text 
-                style={styles.tab} 
+                style={styles.tabTitle as TextStyle} 
                 numberOfLines={1}
                 ellipsizeMode={"tail"}>
                     {title}
                 </Text>
-                <Text style={styles.tab}>{dateTime}</Text>
+                <Text 
+                style={styles.tabDate as TextStyle} 
+                numberOfLines={1}>
+                    {dateTime}
+                </Text>
             </View>
         </TouchableOpacity>
 
@@ -125,32 +143,52 @@ const textAlignProps: textAlignPropType = {
 }
 
 const styles = {
-    header: {
-        margin: 10,
-        marginBottom: -10,
-        borderWidth: 1,
+    overallContainer: {
+        height: "45%",
         borderRadius: 15,
+        marginLeft: 10,
+        marginRight: 10,
+        borderWidth: 1,
+        backgroundColor: "#fec8c1"
+    },
+    header: {
         textAlign: textAlignProps.center,
         padding: 10,
-
+        fontWeight: "bold",
     },
 
     body: {
-        marginRight: 10,
-        borderWidth: 0,
-        borderRadius: 15,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-around",
+        margin: 10,
+        borderWidth: 1,
+        borderRadius: 50,
         textAlign: textAlignProps.center,
-        padding: 10,
-        justifyContent: textAlignProps.center,
+        backgroundColor: "white"
+
         
     },
 
-    tab: {
+    tabTitle: {
+        borderWidth: 0,
+        textAlign: textAlignProps.left,
+        padding: 15,
+        paddingLeft: 30,
+        width: 200,
+        overflow: "hidden",
+        borderRightWidth: 1,
+        borderStyle: "dashed",
+        borderColor: "rgba(0, 0, 0, 0.3)"
+  
+    },
 
-        borderWidth: 1,
+    tabDate: {
+        borderWidth: 0,
         textAlign: textAlignProps.center,
-        padding: 10,
         width: 150,
+        overflow: "hidden",
+        padding: 15,
   
     },
 
@@ -161,6 +199,9 @@ const styles = {
         borderRadius: 15,
         textAlign: textAlignProps.center,
         padding: 10,
+        backgroundColor: "#fe9c8f",
+        fontWeight: "bold",
+        
     }
 };
 

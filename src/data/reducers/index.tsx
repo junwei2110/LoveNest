@@ -9,6 +9,11 @@ export const reducer = (state: IState, action: Action): IState => {
           ...state,
           loading: true,
         }
+      case action_types.USER_LOGGING_END:
+          return {
+            ...state,
+            loading: false,
+          }
       case action_types.USER_LOGIN:
         return {
           ...state,
@@ -27,6 +32,11 @@ export const reducer = (state: IState, action: Action): IState => {
           loading: false,
         }
       case action_types.RETRIEVE_REMINDERS:
+        return {
+          ...state,
+          reminderArray: action.payload
+        }
+      case action_types.UPDATE_REMINDERS:
         return {
           ...state,
           reminderArray: action.payload

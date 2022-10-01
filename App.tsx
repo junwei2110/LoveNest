@@ -1,7 +1,8 @@
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
- *
+ *#fe9c8f • #feb2a8 • #fec8c1 • #fad9c1 • #f9caa7
+ * 
  * @format
  * @flow strict-local
  */
@@ -70,6 +71,14 @@ const App = () => {
         <TabUserOverall.Navigator
           screenOptions={({navigation}) => ({
             headerRight: () => (<UserIcon directToProfile={() => {navigation.navigate('UserProfile')}} />),
+            title: `Welcome ${currentUser.get("avatarName")}`,
+            //title: "",
+            headerStyle: {
+              backgroundColor: '#f9caa7',
+            },
+            headerTitleStyle: {
+              fontWeight: 'normal',
+            },
           })}>
           <TabUserOverall.Screen name="UserApp" component={UserApp} />
           <TabUserOverall.Screen name="UserProfile" component={UserProfile} />
