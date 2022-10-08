@@ -1,10 +1,15 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { TabContainer } from './TabIcon';
 
 export const DatePlanner = () => {
     return (
-        <View>
-            <Text>DatePlanner</Text>
+        <View style={{
+            height: "100%",
+            backgroundColor: "#fad9c1"
+        }}>
+            <TabContainer />
+            
         </View>
     )
 }
