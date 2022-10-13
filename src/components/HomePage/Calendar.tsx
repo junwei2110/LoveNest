@@ -63,14 +63,16 @@ export const CalendarView = () => {
                 <CloseButton
                 handleModal={() => setCurrentVisible(false)}
                 small={true} />
-                <EventModal reminder={currentRem} />
+                <EventModal 
+                reminder={currentRem} 
+                setModalVisible={setCurrentVisible} />
             </>
         </InPageModal>
         <View style={styles.overallContainer as TextStyle}>
             <Text style={styles.header as TextStyle}>Upcoming Events</Text>
             <EventsView>
                 {loading && <Loader fullScreen={false} screenOpacity={'transparent'}/>}
-                {reminderArray && reminderArray.length &&
+                {reminderArray?.length &&
                     reminderArray.map((reminder, idx) => (
                         <EventTab
                         key={idx}
@@ -78,7 +80,8 @@ export const CalendarView = () => {
                         reminder={reminder}
                         />
                 ))}
-                {reminderArray && !reminderArray.length &&
+                {/*Add an icon above the text */}
+                {!reminderArray?.length && !loading &&
                     <Text>Oh it seems like you do not have any upcoming Events</Text>
                 }
             </EventsView>

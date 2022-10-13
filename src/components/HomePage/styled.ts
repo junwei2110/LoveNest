@@ -15,6 +15,8 @@ export const EventsView = styled.ScrollView.attrs({
 
 export const EventModalView = styled.View`
     align-items: center;
+    height: 100%;
+    padding-bottom: 40px;
 `
 
 export const EventModalTextInput = styled.TextInput`
@@ -22,7 +24,7 @@ export const EventModalTextInput = styled.TextInput`
     width: 90%;
     text-align: center;
     margin: 2% 5%;
-    border-radius: 15px;
+    border-radius: 25px;
 `
 
 type FlexBoxProps = {
@@ -45,7 +47,7 @@ export const TextBox = styled.Text<FlexBoxProps>`
     border-width: ${props => props.noBorder ? 0 : 1};
     text-align: center;
     vertical-align: center;
-    border-radius: 15px;
+    border-radius: 25px;
     width: 100%;
     margin-top: 5px; 
     padding: 15px;   
@@ -55,12 +57,10 @@ export const ReminderChecklist = styled.ScrollView.attrs({
     contentContainerStyle: {
             flexGrow: 1,
             flexDirection: 'column',
-            alignItems: 'center',
-                 
+            alignItems: 'center', 
         },
-    height: "40%",
-    marginBottom: "2%",
-    width: "100%"
+
+    width: "100%",
 })``
 
 
@@ -68,7 +68,7 @@ export const ChecklistFlexBox = styled.TouchableOpacity`
     display: flex;
     height: 30px;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 5px;
 `
 
 export const ResizeImage = styled.Image`

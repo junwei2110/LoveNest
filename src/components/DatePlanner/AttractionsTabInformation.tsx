@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ViewProps, TouchableOpacity, TextProps, Image, FlatList } from 'react-native';
+import { View, Text, ViewProps, TouchableOpacity, TextProps, Image, FlatList, Linking, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {ATTRACTIONS_MEDIA_URL, TOURISM_API_KEY} from 'react-native-dotenv';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { Dropdown } from '../../common/Dropdown';
 import { AttractionsConfig, AttractionsSortConfig } from '../../config/AttractionsConfig';
@@ -10,19 +11,25 @@ import { AttractionsAPI } from '../../services/attractions';
 
 
 const attractionsApi = new AttractionsAPI();
+const no_Img = require("../../../assets/BaseApp/No_image_available.png");
 
 const Attractions = () => {
 
     const [activeItem, setActiveItem] = useState<string | null>(null);
+    const [currentItem, setCurrentItem] = useState<string | null>(null);
     const [sortItem, setSortItem] = useState<string | undefined>(undefined);
-    const [attractionsData, setAttractionsData] = useState<Record<string, any> | null>(null);
+    const [nextToken, setNextToken] = useState(undefined);
+    const [attractionsData, setAttractionsData] = useState<Record<string, any>[]>([]);
 
     const handleClick = async () => {
         //TODO: Add a loader here
         if (activeItem) {
             try {
                 const data = await attractionsApi.getAttractionsDetails({keyword: activeItem, sortBy: sortItem});
-                setAttractionsData(data);
+                setNextToken(data.nextToken);
+                setCurrentItem(activeItem);
+                setAttractionsData(() => [...data.data]);
+                
                 Toast.show({
                     type: "success",
                     text1: "Here you go!"
@@ -44,6 +51,29 @@ const Attractions = () => {
         }  
     };
 
+    const handleContClick = async () => {
+            
+        if (currentItem) {       
+            try {
+                const data = await attractionsApi.getAttractionsDetails({keyword: currentItem, sortBy: sortItem, nextToken});
+                setNextToken(data.nextToken);   
+                setAttractionsData((state) => [...state, ...data.data]);
+                
+                Toast.show({
+                    type: "success",
+                    text1: "More results!"
+                })
+            } catch (e: any) {
+                console.log(e.message);
+                Toast.show({
+                    type: "error",
+                    text1: "Please try again later"
+                })
+            }
+        }       
+    };
+
+
     const renderCardItem = ({ item }: { item: Record<string, any> }) => {
 
         const cardprops: CardItem = {
@@ -51,7 +81,8 @@ const Attractions = () => {
             desc: item?.description,
             rating: item?.rating,
             uuid: item?.uuid,
-            imgUuid: item?.images?.[0]?.uuid || item?.thumbnails?.[0]?.uuid
+            imgUuid: item?.images?.[0]?.uuid || item?.thumbnails?.[0]?.uuid,
+            website: item?.officialWebsite,
         }
 
 
@@ -68,6 +99,7 @@ const Attractions = () => {
                 data={AttractionsConfig}
                 onSelect={setActiveItem}
                 styling={styles.keywordDropdown}
+                textInput
                 />
                 <Dropdown 
                 label={"Sort by"} 
@@ -83,39 +115,77 @@ const Attractions = () => {
                 </TouchableOpacity>
             </View>
 
-            {attractionsData?.data ?
+            {attractionsData ?
+            <>
             <FlatList
-            data={attractionsData.data}
+            data={attractionsData}
             renderItem={renderCardItem}
             keyExtractor={(item, index) => index.toString()}
-            /> :
-            <Text>Nothing Found. Try another Search Term</Text>}
+            /> 
+            <TouchableOpacity
+            style={ContinueListButton.imgContainer as ViewProps}
+            onPress={handleContClick}>
+                <Image 
+                    source={require("../../../assets/BaseApp/plus.png")}
+                    resizeMode={"contain"}
+                     style={ContinueListButton.img}
+                    />
+            </TouchableOpacity>
+            </>
+            :
+
+            <View style={{alignItems: "center", justifyContent: "center", height: "70%"}}>
+                <Icon name="rocket" size={80}  />
+                <Text>Nothing Found. Try another Search Term</Text>
+            </View>}
             
         </>
     )
 
 }
-
+//TODO: Add the handleContButton into the Flatlist
 const AttractionCard = ({item}: {item: CardItem}) => {
 
-    const imgUrl = `${ATTRACTIONS_MEDIA_URL}/${item.imgUuid}?apikey=${TOURISM_API_KEY}`
+    const imgUrl = item.imgUuid && `${ATTRACTIONS_MEDIA_URL}/${item.imgUuid}?apikey=${TOURISM_API_KEY}`
+
+
+    const handleLinkToWebsite = async ({url} : {url: string|undefined}) => {
+        if (url) {
+            const supported = await Linking.canOpenURL(url);
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                Alert.alert("No valid url present");
+            }
+        } else {
+            Alert.alert("No valid url present");
+        }
+    };
 
     return (
         <TouchableOpacity
-        style={CardStyles.container as ViewProps}>    
+        style={CardStyles.container as ViewProps}
+        onPress={() => handleLinkToWebsite({url: item.website})}>    
             <View
             style={CardStyles.imgContainer as ViewProps}>
+                {imgUrl ? 
                 <Image 
                 source={{uri: imgUrl}}
                 resizeMode={"contain"}
                 style={CardStyles.img}
+                /> :
+                <Image 
+                source={no_Img}
+                resizeMode={"contain"}
+                style={CardStyles.img}
                 />
+                }
             </View>
             <View
             style={CardStyles.textContainer as ViewProps}>
                 
-                <Text style={CardStyles.title}>{item.title}</Text>
-                <Text style={CardStyles.rating}>{item.rating}</Text>
+                <Text style={CardStyles.title as TextProps}>{item.title}</Text>
+                <Text style={CardStyles.rating as TextProps}>{item.rating}</Text>
             </View>
 
         </TouchableOpacity>
@@ -129,6 +199,7 @@ type CardItem = {
     title?: string;
     desc?: string;
     rating?: string;
+    website?: string;
 }
 
 const CardStyles = {
@@ -139,6 +210,7 @@ const CardStyles = {
         borderWidth: 1,
         borderRadius: 25,
         padding: 15,
+        alignItems: "center"
     },
 
     imgContainer: {
@@ -150,7 +222,7 @@ const CardStyles = {
     img: {
         flex: 1,
         width: undefined,
-        height: undefined
+        height: undefined,
     },
     textContainer: {
         display: "flex",
@@ -171,7 +243,20 @@ const CardStyles = {
     }
 }
 
+const ContinueListButton = {
+    img: {
+        flex: 1,
+        width: undefined,
+        height: undefined,
+    },
+    imgContainer: {
+        display: "flex",
+        height: 30,
+        width: "100%",
+        marginTop: 5,
+    },
 
+}
 
 
 const styles = {
@@ -201,6 +286,14 @@ const styles = {
             borderRadius: 15,
             paddingLeft: 15,
             paddingVertical: 5,
+
+        },
+        textInput: {
+            borderWidth: 1, 
+            marginLeft: 10,
+            borderRadius: 15,
+            paddingLeft: 15,
+            paddingVertical: 1,
 
         },
         indivDropdown: {

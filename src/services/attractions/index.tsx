@@ -12,10 +12,12 @@ export class AttractionsAPI {
 
 
     getAttractionsDetails = (queryParams: QueryParamsProps) => {
-        const networkUrl = queryParams.sortBy ? `${this.network}?keyword=${queryParams.keyword}&language=en&sortBy=${queryParams.sortBy}&apikey=${TOURISM_API_KEY}` : 
-                                `${this.network}?keyword=${queryParams.keyword}&language=en&apikey=${TOURISM_API_KEY}`;
+        const sortByUrl = queryParams.sortBy ? `${this.network}?keyword=${queryParams.keyword}&language=en&sortBy=${queryParams.sortBy}` : 
+                                `${this.network}?keyword=${queryParams.keyword}&language=en`;
         
-        console.log(networkUrl);
+        const networkUrl = queryParams.nextToken ? `${sortByUrl}&nextToken=${queryParams.nextToken}&apikey=${TOURISM_API_KEY}` : 
+                                `${sortByUrl}&apikey=${TOURISM_API_KEY}`;
+
         const data = fetch(networkUrl).then((res) => res.json());
         return data
     }
@@ -26,4 +28,5 @@ export class AttractionsAPI {
 type QueryParamsProps = {
     keyword: string;
     sortBy?: string;
+    nextToken?: string;
 }

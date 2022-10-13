@@ -3,27 +3,32 @@ import { Modal, FlatList, View, TouchableOpacity, Text, ViewProps, TextInput } f
 
 import { AttractionType } from '../../models/enum';
 
-export const Dropdown = ({label, data, onSelect, styling} : {
+export const Dropdown = ({label, data, onSelect, styling, textInput} : {
     label: string | undefined;
     data: Item[];
     onSelect?: (val:string) => void;
-    styling?: Record<string, any> 
+    styling?: Record<string, any>;
+    textInput?: boolean;
+
 }) => {
 
     const [visible, setVisible] = useState(false);
-    const [btnLabel, setBtnLabel] = useState(label);
+    const [btnLabel, setBtnLabel] = useState(textInput ? "" : label);
     const [dropDownTop, setDropDownTop] = useState(0);
     const [dropDownLeft, setDropDownLeft] = useState(0);
     const [dropDownWidth, setDropDownWidth] = useState(0);
 
-    const DropDownBtn = useRef<TouchableOpacity>(null);
+    const DropDownBtn = useRef<TouchableOpacity | TextInput | null>(null);
 
-
+    //TODO: Do a custom made dropdown feature for textinput
 
     const onSelectItem = (item: Item) => {
-        setBtnLabel(item.label);
-        setVisible(false);
-        onSelect?.(item.value);
+        if (!textInput) {
+            setBtnLabel(item.label);
+            setVisible(false);
+            onSelect?.(item.value);
+        }
+        
     }
 
     const handleDropDown = () => {
@@ -48,13 +53,24 @@ export const Dropdown = ({label, data, onSelect, styling} : {
 
     return(
         <View style={[styles.container, { ...styling?.container }]}>
+            {textInput ? 
+            <TextInput
+                value={btnLabel}
+                placeholder={label}
+                onChangeText={(text) => {
+                    setBtnLabel(text);
+                    onSelect?.(text);
+                }}
+                style={[styles.button, { ...styling?.textInput }]}
+                />
+            :
             <TouchableOpacity 
-            ref={DropDownBtn}
+            ref={DropDownBtn as MutableRefObject<TouchableOpacity>}
             onPress={handleDropDown}
             style={[styles.button, { ...styling?.button }]}
             >
                 <Text>{btnLabel}</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>}
 
             <Modal
             transparent

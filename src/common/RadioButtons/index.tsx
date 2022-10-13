@@ -1,4 +1,4 @@
-//TODO: Create RadioButtons for the recurring effect
+//TODO: Beautify RadioButtons
 import React from 'react';
 import { View, Text, TouchableOpacity, FlexAlignType } from 'react-native'
 
