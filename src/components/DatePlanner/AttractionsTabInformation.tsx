@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ViewProps, TouchableOpacity, TextProps, Image, FlatList, Linking, Alert } from 'react-native';
+import { View, Text, ViewProps, TouchableOpacity, TextProps, Image, FlatList, Linking, Alert, TextInputProps } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {ATTRACTIONS_MEDIA_URL, TOURISM_API_KEY} from 'react-native-dotenv';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { Dropdown } from '../../common/Dropdown';
+import { SearchBar } from '../../common/SearchBar';
 import { AttractionsConfig, AttractionsSortConfig } from '../../config/AttractionsConfig';
 import { AttractionsAPI } from '../../services/attractions';
+
+
 
 
 
@@ -114,26 +117,29 @@ const Attractions = () => {
                     <Text style={styles.submitBtnText as TextProps}>Go</Text>
                 </TouchableOpacity>
             </View>
+            <SearchBar
+            searchBarStyle={styles.searchBar as TextInputProps}
+            data={["attractions", "beauty", "lion"]} 
+            />
 
-            {attractionsData ?
-            <>
+            {attractionsData.length ?
             <FlatList
             data={attractionsData}
             renderItem={renderCardItem}
             keyExtractor={(item, index) => index.toString()}
-            /> 
-            <TouchableOpacity
-            style={ContinueListButton.imgContainer as ViewProps}
-            onPress={handleContClick}>
-                <Image 
-                    source={require("../../../assets/BaseApp/plus.png")}
-                    resizeMode={"contain"}
-                     style={ContinueListButton.img}
-                    />
-            </TouchableOpacity>
-            </>
+            ListFooterComponent={
+                <TouchableOpacity
+                style={ContinueListButton.imgContainer as ViewProps}
+                onPress={handleContClick}>
+                    <Image 
+                        source={require("../../../assets/BaseApp/plus.png")}
+                        resizeMode={"contain"}
+                        style={ContinueListButton.img}
+                        />
+                </TouchableOpacity>
+            }
+            />     
             :
-
             <View style={{alignItems: "center", justifyContent: "center", height: "70%"}}>
                 <Icon name="rocket" size={80}  />
                 <Text>Nothing Found. Try another Search Term</Text>
@@ -143,7 +149,7 @@ const Attractions = () => {
     )
 
 }
-//TODO: Add the handleContButton into the Flatlist
+
 const AttractionCard = ({item}: {item: CardItem}) => {
 
     const imgUrl = item.imgUuid && `${ATTRACTIONS_MEDIA_URL}/${item.imgUuid}?apikey=${TOURISM_API_KEY}`
@@ -276,6 +282,17 @@ const styles = {
     submitBtnText: {
         textAlign: "center",
     },
+
+    searchBar: {
+        borderWidth: 1,
+        marginTop: 10,
+        marginHorizontal: 10,
+        borderRadius: 50,
+        paddingLeft: "5%",
+        paddingVertical: 5,
+        maxHeight: "5%",
+    },
+
     keywordDropdown: {
         container: {
             flex: 7,
