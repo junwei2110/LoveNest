@@ -210,6 +210,7 @@ export class Trie {
     data: string[];
 
     constructor(data: string[]) {
+        console.log("Trie created", data);
         this.trie = new Map();
         this.data = data;
 

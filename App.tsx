@@ -21,7 +21,8 @@ import { Stories } from './src/components/Stories';
 import { MediaSearch } from './src/components/MediaSearch';
 import { DatePlanner } from './src/components/DatePlanner';
 import { UserProfile } from './src/components/UserProfile';
-import { PhotoModal } from './src/components/UserProfile/PhotoModal';
+import { PhotoModal } from './src/components/PhotoModal/PhotoModal';
+import { PhotoTaken } from './src/components/PhotoModal/PhotoTaken';
 import { SetUpProfileTabs } from './src/components/UserProfile/SetUpTabs';
 import { UserIcon } from './src/components/UserProfile/Icon';
 import { LoginPage } from "./src/components/Login";
@@ -72,7 +73,6 @@ const App = () => {
           screenOptions={({navigation}) => ({
             headerRight: () => (<UserIcon directToProfile={() => {navigation.navigate('UserProfile')}} />),
             title: `Welcome ${currentUser.get("avatarName")}`,
-            //title: "",
             headerStyle: {
               backgroundColor: '#f9caa7',
             },
@@ -87,6 +87,10 @@ const App = () => {
             presentation: 'modal', 
             headerShown: false}}/>
           <TabUserOverall.Screen name="PhotoModal" component={PhotoModal} 
+          options={{ 
+            presentation: 'modal', 
+            headerShown: false}}/>
+          <TabUserOverall.Screen name="PhotoTaken" component={PhotoTaken} 
           options={{ 
             presentation: 'modal', 
             headerShown: false}}/>

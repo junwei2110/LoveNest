@@ -1,15 +1,15 @@
-import React, { MutableRefObject, useRef, useState } from 'react';
-import { FlatList, Text, TextInput, TextInputProps, TouchableOpacity, View, ViewProps } from 'react-native';
+import React, { MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, FlexStyle, StyleProp, Text, TextInput, TextInputProps, TextStyle, TouchableOpacity, View, ViewProps } from 'react-native';
 import { Trie } from '../../utils/functions/trie';
 import { mockData } from './mockData';
 import { debounce } from '../../utils/functions/debounce';
 
-export const SearchBar = ({searchBarStyle, data, onSelectFunc} : {
+export const SearchBar = ({searchBarStyle, marginTop, trieClass, onSelectFunc} : {
     searchBarStyle?: TextInputProps;
-    data?: string[];
+    marginTop?: number;
+    trieClass?: Trie;
     onSelectFunc?: (val: string) => void;
 }) => {
-
     const [textVal, setTextVal] = useState("");
     const [dropDownTop, setDropDownTop] = useState(0);
     const [dropDownLeft, setDropDownLeft] = useState(0);
@@ -19,11 +19,14 @@ export const SearchBar = ({searchBarStyle, data, onSelectFunc} : {
     const searchTermContainer = useRef<TextInput | null>();
     const timerRef = useRef<NodeJS.Timeout | null | undefined>();
 
-    const trieClass = new Trie(mockData);
+
+
 
     const getHistoricalSearches = (search: string) => {
-        const searchSet = trieClass.trieUsage(search);
-        setSearchSet(() => searchSet);
+        
+        const searchSet = trieClass?.trieUsage(search);
+        console.log(searchSet);
+        searchSet && setSearchSet(() => searchSet);
 
     }
     
@@ -34,9 +37,10 @@ export const SearchBar = ({searchBarStyle, data, onSelectFunc} : {
             searchTermContainer.current.measure((_fx: number, _fy: number, w: number, h: number, px: number, py: number) => {
                 setShowDropDown(true);
                 setDropDownWidth(w);
-                setDropDownTop(py-0.5*h);
+                setDropDownTop(h + (marginTop ? marginTop : 0));
                 setDropDownLeft(px);
             });
+            getHistoricalSearches(textVal);
         }
     }
 
@@ -49,6 +53,7 @@ export const SearchBar = ({searchBarStyle, data, onSelectFunc} : {
     const onSelectItemWithClosing = (item: string) => {
         onSelectItemWithoutClosing(item);
         setShowDropDown(false);
+        onSelectFunc?.(item);
 
     }
 
@@ -72,9 +77,10 @@ export const SearchBar = ({searchBarStyle, data, onSelectFunc} : {
             onChangeText={(text) => onSelectItemWithoutClosing(text)}
             onBlur={() => setShowDropDown(false)}
             value={textVal}
-            numberOfLines={1} 
+            numberOfLines={1}
+            placeholder={"Insert something here"} 
             />
-            {showDropDown ?
+            {trieClass && showDropDown ?
             <View
             style={[style.flatList, {width: dropDownWidth, left: dropDownLeft, top: dropDownTop}] as ViewProps}
             >
@@ -101,5 +107,7 @@ const style = {
         paddingLeft: "5%",
         paddingVertical: 5,
         backgroundColor: '#fec8c1',
+        maxHeight: 150,
+        zIndex: 99
     }
 }

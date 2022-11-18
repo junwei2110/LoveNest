@@ -6,8 +6,10 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { Dropdown } from '../../common/Dropdown';
 import { SearchBar } from '../../common/SearchBar';
-import { AttractionsConfig, AttractionsSortConfig } from '../../config/AttractionsConfig';
+import { AttractionsSortConfig } from '../../config/AttractionsConfig';
 import { AttractionsAPI } from '../../services/attractions';
+import { Trie } from '../../utils/functions/trie';
+import { mockData } from '../../common/SearchBar/mockData';
 
 
 
@@ -23,20 +25,41 @@ const Attractions = () => {
     const [sortItem, setSortItem] = useState<string | undefined>(undefined);
     const [nextToken, setNextToken] = useState(undefined);
     const [attractionsData, setAttractionsData] = useState<Record<string, any>[]>([]);
+    const [trieClass, setTrieClass] = useState<Trie | undefined>(undefined);
+
+
+    useEffect(() => {
+        //TODO: Fetch the search History here
+        setTrieClass(new Trie(mockData));
+    }, []);
 
     const handleClick = async () => {
         //TODO: Add a loader here
         if (activeItem) {
+            console.log(activeItem);
             try {
-                const data = await attractionsApi.getAttractionsDetails({keyword: activeItem, sortBy: sortItem});
-                setNextToken(data.nextToken);
-                setCurrentItem(activeItem);
-                setAttractionsData(() => [...data.data]);
-                
-                Toast.show({
-                    type: "success",
-                    text1: "Here you go!"
+                setTrieClass((state) => {
+                    state?.trieAddition?.(activeItem); 
+                    return state
                 })
+                const data = await attractionsApi.getAttractionsDetails({keyword: activeItem, sortBy: sortItem});
+                if (data?.data?.length) {
+                    setNextToken(data.nextToken);
+                    setCurrentItem(activeItem);
+                    setAttractionsData(() => [...data?.data]);
+
+                    Toast.show({
+                        type: "success",
+                        text1: "Here you go!"
+                    })
+                } else {
+                    Toast.show({
+                        type: "info",
+                        text1: "Nothing found!"
+                    })
+
+                }
+
             } catch (e: any) {
                 console.log(e.message);
                 Toast.show({
@@ -48,7 +71,7 @@ const Attractions = () => {
         } else {
             Toast.show({
                 type: "error",
-                text1: "Please select a field from the dropdown"
+                text1: "Please enter a key word"
             })
 
         }  
@@ -97,12 +120,11 @@ const Attractions = () => {
     return (
         <>
             <View style={styles.searchContainer as ViewProps}>
-                <Dropdown 
-                label={"Select from list"} 
-                data={AttractionsConfig}
-                onSelect={setActiveItem}
-                styling={styles.keywordDropdown}
-                textInput
+                <SearchBar
+                searchBarStyle={styles.searchBar as TextInputProps}
+                marginTop={styles.searchBar.marginTop}
+                trieClass={trieClass}
+                onSelectFunc={setActiveItem}
                 />
                 <Dropdown 
                 label={"Sort by"} 
@@ -117,14 +139,10 @@ const Attractions = () => {
                     <Text style={styles.submitBtnText as TextProps}>Go</Text>
                 </TouchableOpacity>
             </View>
-            <SearchBar
-            searchBarStyle={styles.searchBar as TextInputProps}
-            data={["attractions", "beauty", "lion"]} 
-            />
 
             {attractionsData.length ?
             <FlatList
-            data={attractionsData}
+            data={attractionsData || []}
             renderItem={renderCardItem}
             keyExtractor={(item, index) => index.toString()}
             ListFooterComponent={
@@ -284,13 +302,13 @@ const styles = {
     },
 
     searchBar: {
+        flex: 7,
         borderWidth: 1,
         marginTop: 10,
-        marginHorizontal: 10,
+        marginLeft: 10,
         borderRadius: 50,
         paddingLeft: "5%",
-        paddingVertical: 5,
-        maxHeight: "5%",
+        paddingVertical: 0,
     },
 
     keywordDropdown: {

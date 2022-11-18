@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import Parse from 'parse/react-native.js';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 
 import { Store } from '../../data';
 import { retrieveReminders } from '../../data/actions';

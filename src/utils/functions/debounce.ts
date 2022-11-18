@@ -10,8 +10,7 @@ export const debounce = (cb: (...arg: any[]) => void, delay: number, timerRef: M
             clearTimeout(timerRef.current);
         }
         
-        timerRef.current = setTimeout(() => cb(...args), delay);
-        console.log(timerRef.current);
+        timerRef.current = setTimeout(() => cb(...args), delay);;
     }
     
 }
