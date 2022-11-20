@@ -1,13 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *#fe9c8f • #feb2a8 • #fec8c1 • #fad9c1 • #f9caa7
- * 
- * @format
- * @flow strict-local
- */
-
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -28,7 +19,7 @@ import { UserIcon } from './src/components/UserProfile/Icon';
 import { LoginPage } from "./src/components/Login";
 import { SignUpPage } from "./src/components/SignUp";
 import { Store } from './src/data';
-import { userLogin } from './src/data/actions';
+import { userLoggingEnd, userLogin } from './src/data/actions';
 
 import { LoginStackParamList, UserStackParamList, UserOverallStackParamList } from './types';
 
@@ -39,12 +30,22 @@ const TabUser = createBottomTabNavigator<UserStackParamList>();
 const App = () => {
   console.log("App initialized");
   const [globalState, dispatch] = useContext(Store)
-  const {currentUser, loading} = globalState;
+  const { currentUser } = globalState;
+
+  const [initLoading, setInitLoading] = useState(true);
   
   useEffect(() => {
     const getCurrentUser = async () => {
-      const user = await Parse.User.currentAsync();
-      dispatch(userLogin(user));
+      try {
+        const user = await Parse.User.currentAsync();
+        dispatch(userLogin(user));
+        setInitLoading(false);
+      } catch(e) {
+        dispatch(userLoggingEnd());
+        setInitLoading(false);
+        Alert.alert("Failed to retrieve user credentials. Please try again");
+      }
+      
     };
     const checkCameraPermission = async () => {
       let status = await Camera.getCameraPermissionStatus();
@@ -67,6 +68,7 @@ const App = () => {
 
   return (
     <>
+    {!initLoading ?
     <NavigationContainer>
       {currentUser ? (
         <TabUserOverall.Navigator
@@ -103,6 +105,7 @@ const App = () => {
         </TabLogin.Navigator>
       )}
     </NavigationContainer>
+    : null}
     </>
   );
 };

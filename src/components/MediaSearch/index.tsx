@@ -15,7 +15,6 @@ import { MediaOptions } from '../UserProfile';
 export const MediaSearch = () => {
 
     const [camPermStatus, setCamPermStatus] = useState(false);
-    const [photoUri, setPhotoUri] = useState("");
     const devices = useCameraDevices();
     const navigation = useNavigation<NativeStackNavigationProp<SetUpStackParamList>>();
 
@@ -66,12 +65,9 @@ export const MediaSearch = () => {
     return (
         <View style={{
             height: "100%",
-            backgroundColor: "#fad9c1"
+            backgroundColor: "#fad9c1",
+            paddingTop: 10
         }}>
-            <SearchBar 
-            searchBarStyle={style.searchBar as TextInputProps}
-            marginTop={10}
-            />
 
             <ImageView />
             <IconFromNative
@@ -79,7 +75,7 @@ export const MediaSearch = () => {
             onClick={onCamHandle} 
             children={
                 <>
-                <AddPhoto name={"add-a-photo"} size={50} />
+                    <AddPhoto name={"add-a-photo"} size={50} />
                 </>
             } />
             <IconFromNative 

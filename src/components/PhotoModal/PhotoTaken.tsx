@@ -11,10 +11,6 @@ import { RoutePhotoUriParam, SetUpStackParamList } from './PhotoModal';
 import { CloseButton } from '../../common/CustomButton/CloseButton';
 import { PicDescModal } from './DescriptionModal';
 
-
-
-
-
 export const PhotoTaken = () => {
 
     const [globalState, dispatch] = useContext(Store);

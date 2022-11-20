@@ -10,8 +10,13 @@ import { userLoggingInit, userLoggingEnd } from "../../data/actions"
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-type NavigateBackToPhotos = {
-    MediaSearch: undefined
+export type NavigateBackToPhotos = {
+    MediaSearch: {
+        newPhotoUri?: string;
+        id?: string;
+        caption?: string;
+        tags?: Record<string, any>[];
+    }
 }
 
 export const PicDescModal = ({photoUri} : {
@@ -62,9 +67,12 @@ export const PicDescModal = ({photoUri} : {
                 type: "success",
                 text1: "Picture saved"
             });
-            //TODO: Dispatch action here to save it to the context store
-            //Improvement: Use redis cache
-            navigation.navigate("MediaSearch");
+            navigation.navigate("MediaSearch", {
+                id: savePicQuery.id,
+                newPhotoUri: photoUri,
+                caption,
+                tags,
+            });
         } catch(e) {
             dispatch(userLoggingEnd());
             Toast.show({
