@@ -192,7 +192,8 @@ export const EventModal = ({reminder, setModalVisible}: {
             const reminderParseQuery = new Parse.Query("Reminder");
             console.log(id);
             const reminderParseObj = await reminderParseQuery.get(id);
-            await reminderParseObj.destroy();
+            reminderParseObj.set("completionStatus", true);
+            await reminderParseObj.save();
             setModalVisible?.(false);
 
             if (reminderArray?.length) {
@@ -239,7 +240,7 @@ export const EventModal = ({reminder, setModalVisible}: {
             center
             returnFn={() => setrecurrModal(false)}>
                 <RadioButtonArray 
-                    valueArray={["One-Time", "Week", "Month", "Annual"]}
+                    valueArray={["Once", "Week", "Month", "Annual"]}
                     value={recurrence}
                     setValue={handleRecurrChange}
                     orientation={"vertical"}

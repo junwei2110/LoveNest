@@ -3,6 +3,7 @@ import { Modal, Image, Button, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import FastImage from 'react-native-fast-image';
 
 import { InPageModal } from '../../common/InPageModal';
 import { Store } from '../../data';
@@ -17,6 +18,7 @@ export const PhotoTaken = () => {
     const navigation = useNavigation<NavigationProp<SetUpStackParamList>>();
     const route = useRoute<RouteProp<RoutePhotoUriParam>>();
     const takenPhotoUri = route.params.activeUri;
+    const devices = route.params.devices;
 
     const [isDescModalVisible, setDescModalVisible] = useState(false);
 
@@ -53,7 +55,7 @@ export const PhotoTaken = () => {
             </>
         </InPageModal>
         <Modal>
-            <Image
+            <FastImage
                 style={{flex: 1, width: undefined, height: undefined}}
                 source={{uri: takenPhotoUri}}
                 resizeMode="contain"
@@ -68,7 +70,7 @@ export const PhotoTaken = () => {
             <Text></Text>
             <Button 
             title="Retake Photo"
-            onPress={() => navigation.navigate("PhotoModal", {})} />
+            onPress={() => navigation.navigate("PhotoModal", {devices})} />
 
         </Modal>
         </>

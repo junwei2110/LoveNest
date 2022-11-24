@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import { Text, StyleSheet, TouchableOpacity, View, Image, Modal, Button, Alert } from 'react-native';
 import { Camera, CameraDevice } from 'react-native-vision-camera';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
@@ -31,6 +31,7 @@ export type SetUpStackParamList = {
     };
     PhotoTaken: {
         activeUri: string;
+        devices?: Record<string, CameraDevice>;
     }
 }
 
@@ -63,8 +64,13 @@ export const PhotoModal = () => {
     const dummyProfilePicUri = Image.resolveAssetSource(dummyProfilePic).uri;
     const [takenPhotoUri, setTakenPhotoUri] = useState(dummyProfilePicUri);
 
-    
+    useEffect(() => {
+        const willFocusSubscribe = navigation.addListener("focus", () => {
+            setActivity(true);
+        });
 
+        return willFocusSubscribe;
+    }, [])
 
     const renderCamera = () => {
         if (device) {
@@ -85,6 +91,8 @@ export const PhotoModal = () => {
     };
 
     const switchCameraView = () => {
+        console.log(devices?.front);
+        console.log(device);
         if (device === devices?.front) {
             setDevice(devices?.back);
         } else {
@@ -112,6 +120,17 @@ export const PhotoModal = () => {
         navigation.goBack();
     }
 
+    const goToPhotoTaken = () => {
+
+        if (takenPhotoUri !== dummyProfilePicUri) {
+            setActivity(false);
+            navigation.navigate("PhotoTaken", {
+                activeUri: takenPhotoUri,
+                devices
+            })
+        }
+    };
+
 
 
     return(
@@ -120,9 +139,7 @@ export const PhotoModal = () => {
                 {renderCamera()}
                 <CameraBottomView>
                     <ImageBox
-                        onPress={() => navigation.navigate("PhotoTaken", {
-                            activeUri: takenPhotoUri
-                        })}>
+                        onPress={goToPhotoTaken}>
                         <ProfilePic 
                             source={{uri: takenPhotoUri}}
                             resizeMode="contain"

@@ -146,7 +146,7 @@ const renderFullScaleImage = ({ item, setActiveItem }: {
 }) => {
 
     return (
-        <Modal>
+        <Modal style={{backgroundColor: "black"}}>
             <CloseButton
                 handleModal={() => setActiveItem(null)}
                 small={true} />
@@ -182,6 +182,7 @@ const styles = {
         height: 100,
         borderWidth: 1/3,
         margin: 1,
+        backgroundColor: "black"
     },
 
     IndivImage: {

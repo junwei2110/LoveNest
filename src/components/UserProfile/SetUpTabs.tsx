@@ -34,7 +34,7 @@ export type ProfileInputs = {
     importantDates?: DateObj[];
 }
 
-type recurrence = "One-Time" | "Week" | "Month" | "Annual";
+type recurrence = "Once"| "One-Time" | "Week" | "Month" | "Annual";
 
 export type DateObj = {
     title?: string;
@@ -175,7 +175,7 @@ const DateTab = ({dateArray, setDateArray, bdate, annidate, setBirthDate, setAnn
         arrayOfDates.push({
             title: "",
             createdAt: new Date(),
-            recurrence: "One-Time"
+            recurrence: "Once"
         });
         console.log(arrayOfDates);
         setDateArray(() => [...arrayOfDates]);
@@ -356,7 +356,7 @@ const DateTabComponent = ({index, text, dateArray, setDateArray, singleDate, set
             </DateSpanView>
             {optional && recurrence && 
             <RadioButtonArray 
-            valueArray={["One-Time", "Week", "Month", "Annual"]}
+            valueArray={["Once", "Week", "Month", "Annual"]}
             value={recurrence}
             setValue={handleRecurrenceChange}
             orientation={"horizontal"}

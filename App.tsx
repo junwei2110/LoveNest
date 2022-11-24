@@ -133,8 +133,10 @@ const UserApp = () => (
         }
 
       },
-      tabBarActiveTintColor: 'tomato',
-      tabBarInactiveTintColor: 'gray',
+      tabBarActiveTintColor: 'black',
+      tabBarInactiveTintColor: 'black',
+      tabBarInactiveBackgroundColor: "white",
+      tabBarActiveBackgroundColor: "#f9caa7",
       headerShown: false
     })}>
     <TabUser.Screen name="Home" component={HomePage} />

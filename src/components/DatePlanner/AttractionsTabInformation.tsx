@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ViewProps, TouchableOpacity, TextProps, Image, FlatList, Linking, Alert, TextInputProps } from 'react-native';
+import { View, Text, ViewProps, TouchableOpacity, TextProps, FlatList, Linking, Alert, TextInputProps } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {ATTRACTIONS_MEDIA_URL, TOURISM_API_KEY} from 'react-native-dotenv';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import FastImage from 'react-native-fast-image';
 
 import { Dropdown } from '../../common/Dropdown';
 import { SearchBar } from '../../common/SearchBar';
@@ -149,7 +150,7 @@ const Attractions = () => {
                 <TouchableOpacity
                 style={ContinueListButton.imgContainer as ViewProps}
                 onPress={handleContClick}>
-                    <Image 
+                    <FastImage 
                         source={require("../../../assets/BaseApp/plus.png")}
                         resizeMode={"contain"}
                         style={ContinueListButton.img}
@@ -193,12 +194,12 @@ const AttractionCard = ({item}: {item: CardItem}) => {
             <View
             style={CardStyles.imgContainer as ViewProps}>
                 {imgUrl ? 
-                <Image 
+                <FastImage 
                 source={{uri: imgUrl}}
                 resizeMode={"contain"}
                 style={CardStyles.img}
                 /> :
-                <Image 
+                <FastImage 
                 source={no_Img}
                 resizeMode={"contain"}
                 style={CardStyles.img}

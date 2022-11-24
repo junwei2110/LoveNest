@@ -123,9 +123,9 @@ export const UserProfile = () => {
                         resizeMode="contain" 
                         />
                     </TouchableOpacity>    
-                </CloseView>
-                
+                </CloseView>                
             </Modal>
+
             <View>
                 <Text></Text>
                 <SetUpProfilePicView>

@@ -33,3 +33,12 @@ export const updateReminders = (array: GlobalReminderObj[]): Action => ({
     type: action_types.UPDATE_REMINDERS,
     payload: array
 });
+
+export const filterReminders = (array: GlobalReminderObj[]): Action => ({
+    type: action_types.FILTER_REMINDERS,
+    payload: array
+});
+
+export const clearfilterReminders = (): Action => ({
+    type: action_types.CLEAR_FILTER_REMINDERS,
+});

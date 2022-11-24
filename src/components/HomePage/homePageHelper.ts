@@ -1,6 +1,7 @@
 import React from 'react';
 import Parse from 'parse/react-native.js';
 import { ChecklistItem, GlobalReminderObj } from './EventModal';
+import { manualDateConversion } from '../../utils/functions/utility';
 
 export const getReminders = async (currentUser: Parse.Attributes) => {
 
@@ -22,12 +23,11 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
 
 
     const modifiedRemArr: GlobalReminderObj[] = reminderArray.map((reminder) => {
-        
         const id: string = reminder && reminder.id;
         const title: string = reminder && reminder.get('title');
         const recurrence: string = reminder && reminder.get('recurrence');
         const userOrCoupleId: string = reminder && reminder.get('userOrCoupleId');
-        const dateTime: Date = reminder && new Date(reminder.get('dateTime'));
+        const dateTime: Date = reminder && new Date(reminder.get('dateTime').toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
         const checkItems: ChecklistItem[] = reminder && reminder.get('checkItems');
         const completionStatus: boolean = reminder && reminder.get('completionStatus');
         const currentDateTime = new Date();
@@ -43,6 +43,7 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
         }
 
         switch (recurrence) {
+            case "Once":
             case "One-Time":
                 if (dateTime.getTime() < currentDateTime.getTime()) {
                     reminder.set('completionStatus', true);
