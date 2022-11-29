@@ -20,7 +20,6 @@ export const Dropdown = ({label, data, onSelect, styling, textInput} : {
 
     const DropDownBtn = useRef<TouchableOpacity | TextInput | null>(null);
 
-    //TODO: Do a custom made dropdown feature for textinput
 
     const onSelectItem = (item: Item) => {
         if (!textInput) {

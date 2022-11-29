@@ -17,3 +17,11 @@ export const manualDateConversion = (dateString: string) => { // day month date 
     return `${year}-${monthNumeric}-${date}`;
 
 }
+
+
+export const getFirstItemInSet = (set: Set<any>) => {
+
+    const [firstItem] = set;
+    return firstItem;
+
+}

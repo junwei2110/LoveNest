@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, ViewProps, TouchableOpacity, TextProps, FlatList, Linking, Alert, TextInputProps } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {ATTRACTIONS_MEDIA_URL, TOURISM_API_KEY} from 'react-native-dotenv';
@@ -11,6 +11,8 @@ import { AttractionsSortConfig } from '../../config/AttractionsConfig';
 import { AttractionsAPI } from '../../services/attractions';
 import { Trie } from '../../utils/functions/trie';
 import { mockData } from '../../common/SearchBar/mockData';
+import { Store } from '../../data';
+import { getFirstItemInSet } from '../../utils/functions/utility';
 
 
 
@@ -21,18 +23,25 @@ const no_Img = require("../../../assets/BaseApp/No_image_available.png");
 
 const Attractions = () => {
 
+    const [globalState, dispatch] = useContext(Store);
+    const { currentUser } = globalState;
+    const searchHistory = currentUser?.get("attractionSearchHistory");
+
     const [activeItem, setActiveItem] = useState<string | null>(null);
     const [currentItem, setCurrentItem] = useState<string | null>(null);
     const [sortItem, setSortItem] = useState<string | undefined>(undefined);
     const [nextToken, setNextToken] = useState(undefined);
     const [attractionsData, setAttractionsData] = useState<Record<string, any>[]>([]);
-    const [trieClass, setTrieClass] = useState<Trie | undefined>(undefined);
-
+    const [trieClass, setTrieClass] = useState<Trie | undefined>(new Trie(searchHistory || []));
+    const [currHistory, setHistory] = useState<Set<string>>(new Set(searchHistory || []));
 
     useEffect(() => {
-        //TODO: Fetch the search History here
-        setTrieClass(new Trie(mockData));
-    }, []);
+        const currHistoryArr = Array.from(currHistory);
+        currentUser?.set("attractionSearchHistory", currHistoryArr);
+        currentUser?.save();
+        console.log("currentUser saved");
+
+    }, [currHistory]);
 
     const handleClick = async () => {
         //TODO: Add a loader here
@@ -41,6 +50,16 @@ const Attractions = () => {
             try {
                 setTrieClass((state) => {
                     state?.trieAddition?.(activeItem); 
+                    return state
+                });
+                setHistory((state) => {
+                    state.add(activeItem);
+                    if (state.size > 10) {
+                        const firstItem = getFirstItemInSet(state);
+                        console.log(firstItem);
+                        state.delete(firstItem)
+                    }
+                    
                     return state
                 })
                 const data = await attractionsApi.getAttractionsDetails({keyword: activeItem, sortBy: sortItem});

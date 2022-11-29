@@ -83,10 +83,9 @@ export const PicDescModal = ({photoUri} : {
         }
         
 
-    }   
-
+    } 
     return (
-        <>
+        <View style={{height: "95%", alignItems: "center", paddingBottom: 40}}>
             <View style={style.captionContainer as ViewProps}>
                 <Text>Caption: </Text>
                 <TextInput 
@@ -133,7 +132,7 @@ export const PicDescModal = ({photoUri} : {
             >
                 <Text style={style.updateBtn as ViewProps}>Add Image</Text>
             </TouchableOpacity>
-        </>
+        </View>
     )
 }
 
@@ -226,18 +225,18 @@ const style = {
             flexGrow: 1,
             flexDirection: 'row', 
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
         },
         width: "85%",
-        height: "50%",
+        maxHeight: "50%",
+
     },
     updateBtnContainer: {
-        justifyContent: "center",
-        alignItems: "center",
+        position: "absolute",
+        bottom: "5%"
     },
     updateBtn: {
         borderWidth: 1,   
-        width: "30%",
         textAlign: "center",
         padding: 10,
 
