@@ -68,6 +68,7 @@ export const SetUpProfileTabs = () => {
         partnerIdQuery.contains('email', partnerEmail);
         const partnerIdQueryResult = await partnerIdQuery.find();
         if (partnerIdQueryResult.length > 0) {
+            //TODO: An additional check to see if he alr has a partner 
             setpartnerId(partnerIdQueryResult[0].id);
             Alert.alert('Partner Found!');            
         } else {

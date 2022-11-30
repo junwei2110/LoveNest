@@ -1,12 +1,14 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
 import { Camera } from 'react-native-vision-camera';
 import { Alert } from 'react-native';
+import AntIcon from 'react-native-vector-icons/AntDesign';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import Fontisto from 'react-native-vector-icons/Fontisto';
 
-import { BaseIcon } from './src/common/icons/BaseIcon';
 import { HomePage } from './src/components/HomePage';
 import { Stories } from './src/components/Stories';
 import { MediaSearch } from './src/components/MediaSearch';
@@ -25,7 +27,7 @@ import { LoginStackParamList, UserStackParamList, UserOverallStackParamList } fr
 
 const TabLogin = createNativeStackNavigator<LoginStackParamList>();
 const TabUserOverall = createNativeStackNavigator<UserOverallStackParamList>();
-const TabUser = createBottomTabNavigator<UserStackParamList>();
+const TabUser = createMaterialBottomTabNavigator<UserStackParamList>();
 
 const App = () => {
   console.log("App initialized");
@@ -76,7 +78,7 @@ const App = () => {
             headerRight: () => (<UserIcon directToProfile={() => {navigation.navigate('UserProfile')}} />),
             title: `Welcome ${currentUser.get("avatarName")}`,
             headerStyle: {
-              backgroundColor: '#f9caa7',
+              backgroundColor: 'white',
             },
             headerTitleStyle: {
               fontWeight: 'normal',
@@ -117,32 +119,41 @@ const UserApp = () => (
     screenOptions={({route}) => ({
       tabBarIcon: () => {
         if (route.name === "Home") {
-          return <BaseIcon source={require("./assets/BaseApp/home.png")} />
+          return <AntIcon name="home" size={22} color="white" />
 
         } else if (route.name === "Stories") {
-          return <BaseIcon source={require("./assets/BaseApp/script.png")} />
+          return <AntIcon name="wechat" size={22} color="white" />
 
         } else if (route.name === "MediaSearch") {
-          return <BaseIcon source={require("./assets/BaseApp/find.png")} />
+          return <MaterialIcon name="photo-camera-front" size={22} color="white" />
 
         } else if (route.name === "DatePlanner") {
-          return <BaseIcon source={require("./assets/BaseApp/couple.png")} />
+          return <Fontisto name="holiday-village" size={22} color="white" />
 
-        } else if (route.name === "Upload") {
-          return <BaseIcon source={require("./assets/BaseApp/more.png")} /> 
         }
-
-      },
-      tabBarActiveTintColor: 'black',
-      tabBarInactiveTintColor: 'black',
-      tabBarInactiveBackgroundColor: "white",
-      tabBarActiveBackgroundColor: "#f9caa7",
-      headerShown: false
+      }
     })}>
-    <TabUser.Screen name="Home" component={HomePage} />
-    <TabUser.Screen name="Stories" component={Stories} />
-    <TabUser.Screen name="MediaSearch" component={MediaSearch} />
-    <TabUser.Screen name="DatePlanner" component={DatePlanner} />
+    <TabUser.Screen 
+      name="Home" 
+      component={HomePage} 
+      options={{
+        tabBarColor: "#f0516f" 
+      }}  
+    />
+    <TabUser.Screen name="Stories" component={Stories} 
+    options={{
+      tabBarColor: "#03045e" 
+    }}  />
+    <TabUser.Screen name="MediaSearch" component={MediaSearch} 
+    options={{
+      tabBarColor: "#ff5003" 
+    }}
+    />
+    <TabUser.Screen name="DatePlanner" component={DatePlanner} 
+    options={{
+      tabBarColor: "#00b761" 
+    }}
+    />
   </TabUser.Navigator>
 
 );

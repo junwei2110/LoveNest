@@ -62,14 +62,12 @@ export const EventModal = ({reminder, setModalVisible}: {
         const checklistItems = [...checkItems];
         const newChecklist = checklistItems.map((item) => {
             if (item.id === selectedItem.id) {
-                console.log(selectedItem.id)
                 item.isChecked = !item.isChecked
                 return item
             }
 
             return item
         })
-        console.log(newChecklist);
         setCheckItems(() => [...newChecklist]);
     }
 
@@ -84,7 +82,6 @@ export const EventModal = ({reminder, setModalVisible}: {
             ...theCurrentItem,
             task: text
         }));
-        console.log(currentItem);
     }
 
     const handleChecklistItemConfirmation = () => {
@@ -176,7 +173,6 @@ export const EventModal = ({reminder, setModalVisible}: {
             }
             dispatch(updateReminders(updatedArr));
             await reminderParseObj.save();
-            console.log(updatedArr)
             
             dispatch(userLoggingEnd());
             Alert.alert("Reminder Saved");
@@ -190,7 +186,6 @@ export const EventModal = ({reminder, setModalVisible}: {
         try {
             dispatch(userLoggingInit());
             const reminderParseQuery = new Parse.Query("Reminder");
-            console.log(id);
             const reminderParseObj = await reminderParseQuery.get(id);
             reminderParseObj.set("completionStatus", true);
             await reminderParseObj.save();

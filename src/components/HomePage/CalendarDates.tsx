@@ -19,7 +19,7 @@ export const CalendarDateView = () => {
 
     const [globalState, dispatch] = useContext(Store);
     const { currentUser, reminderArray } = globalState;
-    console.log(markedDates)
+    
     useEffect(() => {
         if (reminderArray?.length) {
             let freshMarkedDates = { ...markedDatesMap };
@@ -58,8 +58,9 @@ export const CalendarDateView = () => {
         let newMarkedDates = {...markedDates};
         let newSelectedDateObj = {selected: true, selectedColor: "blue"};
         let oldSelectedDateObj = {selected: false, selectedColor: undefined};
-
+        
         if (newMarkedDates.hasOwnProperty(date.dateString)) {
+            
             newSelectedDateObj = {...newMarkedDates[date.dateString], ...newSelectedDateObj};
             newMarkedDates = {
                 ...newMarkedDates,
@@ -83,7 +84,6 @@ export const CalendarDateView = () => {
 
     const filterReminderArray = (date: DateData) => {
         const filteredReminderArr = reminderArray?.filter((reminder) => {
-            console.log(reminder?.dateTime)
             const realDate = new Date(reminder?.dateTime);
             const reminderDate = YYYYMMDDFormat(realDate);
             return reminderDate === date.dateString

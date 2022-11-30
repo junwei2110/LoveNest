@@ -70,7 +70,7 @@ const TabIcon = ({src, title, handleClick} : {
             <TouchableOpacity
             style={{
                 borderWidth: 2,
-                borderColor: "white",
+                borderColor: "#00b761",
                 borderRadius: 15,
                 height: 70,
                 width: 70,

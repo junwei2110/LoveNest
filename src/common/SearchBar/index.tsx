@@ -25,7 +25,6 @@ export const SearchBar = ({searchBarStyle, marginTop, trieClass, onSelectFunc} :
     const getHistoricalSearches = (search: string) => {
         
         const searchSet = trieClass?.trieUsage(search);
-        console.log(searchSet);
         searchSet && setSearchSet(() => searchSet);
 
     }

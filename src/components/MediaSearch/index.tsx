@@ -65,7 +65,7 @@ export const MediaSearch = () => {
     return (
         <View style={{
             height: "100%",
-            backgroundColor: "#fad9c1",
+            backgroundColor: "white",
             paddingTop: 10
         }}>
 
@@ -75,7 +75,7 @@ export const MediaSearch = () => {
             onClick={onCamHandle} 
             children={
                 <>
-                    <AddPhoto name={"add-a-photo"} size={50} />
+                <AddPhoto name={"add-a-photo"} size={50} color={"#ff5003"} />
                 </>
             } />
             <IconFromNative 
@@ -83,7 +83,7 @@ export const MediaSearch = () => {
             onClick={handleChoosePhoto}
             children={
                 <>
-                <AddPhoto name={"add-photo-alternate"} size={50} color={"#fe9c8f"} />
+                <AddPhoto name={"add-photo-alternate"} size={50} color={"#ff5003"} />
                 </>
             } />
         </View>
@@ -107,7 +107,8 @@ const style = {
         position: "absolute",
         bottom: "5%",
         left: "15%",
-        borderWidth: 1,
+        borderWidth: 3,
+        borderColor: "#ff5003",
         borderRadius: 50,
         padding: 15
 
@@ -116,7 +117,8 @@ const style = {
         position: "absolute",
         bottom: "5%",
         right: "15%",
-        borderWidth: 1,
+        borderWidth: 3,
+        borderColor: "#ff5003",
         borderRadius: 50,
         padding: 15
 

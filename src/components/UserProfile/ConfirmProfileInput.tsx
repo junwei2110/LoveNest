@@ -44,6 +44,9 @@ export const ConfirmProfileInput = ({
                 currentUser.set('coupleId', coupleId);
                 await currentUser.save();
 
+                //TODO: Query the partner here and add the coupleId to the partner
+                
+
                 const reminderBdayObj = new Parse.Object('Reminder');
                 reminderBdayObj.set('title', profileInputs.bdate.title);
                 reminderBdayObj.set('dateTime', profileInputs.bdate.date?.toDateString());

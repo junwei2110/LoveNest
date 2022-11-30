@@ -6,7 +6,7 @@ export const DatePlanner = () => {
     return (
         <View style={{
             height: "100%",
-            backgroundColor: "#fad9c1"
+            backgroundColor: "white"
         }}>
             <TabContainer />
             

@@ -46,7 +46,6 @@ const Attractions = () => {
     const handleClick = async () => {
         //TODO: Add a loader here
         if (activeItem) {
-            console.log(activeItem);
             try {
                 setTrieClass((state) => {
                     state?.trieAddition?.(activeItem); 
@@ -56,7 +55,6 @@ const Attractions = () => {
                     state.add(activeItem);
                     if (state.size > 10) {
                         const firstItem = getFirstItemInSet(state);
-                        console.log(firstItem);
                         state.delete(firstItem)
                     }
                     
