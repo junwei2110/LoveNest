@@ -10,7 +10,6 @@ import { SearchBar } from '../../common/SearchBar';
 import { AttractionsSortConfig } from '../../config/AttractionsConfig';
 import { AttractionsAPI } from '../../services/attractions';
 import { Trie } from '../../utils/functions/trie';
-import { mockData } from '../../common/SearchBar/mockData';
 import { Store } from '../../data';
 import { getFirstItemInSet } from '../../utils/functions/utility';
 

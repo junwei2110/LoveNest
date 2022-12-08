@@ -11,32 +11,26 @@ type Props = NativeStackScreenProps<LoginStackParamList, 'Login'>;
 export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
 
     const [email, setEmail] = useState("");
-    const [avatarName, setAvatarName] = useState("");
     const [password1, setPassword1] = useState("");
     const [password2, setPassword2] = useState("");
-    const [partner, setPartner] = useState("");
-
+    
     const userRegistration = () => {
         if (password1 !== password2) {
             return Alert.alert('Error!', 'Please ensure re-typed password is the same')
         }
 
         const usernameVal = email;
-        const avatarNameVal = avatarName;
         const passwordVal = password1;
-        const partnerVal = partner;
         
         const signUpAddParams = {
             email: usernameVal,
-            avatarName: avatarNameVal,
-            partnerId: partnerVal,
             firstTimerProfile: true
         }
 
         Parse.User.signUp(usernameVal, passwordVal, signUpAddParams)
-            .then(async (createdUser) => {
-                Alert.alert('Success!', `User was successfully created. Please verify your email to login`);
+            .then(async (_createdUser) => {
                 await Parse.User.logOut();
+                Alert.alert('Success!', `User was successfully created. Please verify your email to login`);
                 navigation.dispatch(StackActions.popToTop());
                 return true;
             }).catch((e) => {
@@ -57,10 +51,6 @@ export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
                 onChangeText={(text) => setEmail(text)}
             />
             <SignUpTextInput
-                placeholder={"Avatar Name (Optional)"}
-                onChangeText={(text) => setAvatarName(text)}
-            />
-            <SignUpTextInput
                 placeholder={"Password"}
                 secureTextEntry={true}
                 onChangeText={(text) => setPassword1(text)}
@@ -69,10 +59,6 @@ export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
                 placeholder={"Re-type Password"}
                 secureTextEntry={true}
                 onChangeText={(text) => setPassword2(text)}
-            />
-            <SignUpTextInput
-                placeholder={"Partner's Email (Optional)"}
-                onChangeText={(text) => setPartner(text)}
             />
             <SignUpButton
                 onPress={() => userRegistration()}

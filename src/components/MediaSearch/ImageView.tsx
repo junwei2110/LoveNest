@@ -48,7 +48,7 @@ export const ImageView = () => {
 
         try {
             const imageObjQuery = new Parse.Query("Photo");
-            imageObjQuery.containedIn('userOrCoupleId', [currentUser?.id, currentUser?.get("coupleId")]);
+            imageObjQuery.containedIn('userOrCoupleId', [currentUser?.get("coupleId")]);
             imageObjQuery.addDescending("updatedAt");
             const imageObjResponse = await imageObjQuery.find();
             const photoArrayFromParse = 

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Text, Button, View, Alert, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 import DatePicker from 'react-native-date-picker';
 import Parse from "parse/react-native.js";
+import Toast from 'react-native-toast-message';
 
 
 import { 
@@ -24,6 +25,8 @@ import {
 } from './styled';
 import { ConfirmProfileInput } from './ConfirmProfileInput';
 import { RadioButtonArray } from '../../common/RadioButtons';
+import { Store } from '../../data';
+import { userLoggingInit, userLoggingEnd } from '../../data/actions';
 
 export type ProfileInputs = {
     name: string;
@@ -43,9 +46,21 @@ export type DateObj = {
     recurrence?: recurrence;
 }
 
+type RouteSetUpTab = {
+    params: {
+        updatePartner: boolean;
+    }
+}
+
 export const SetUpProfileTabs = () => {
 
     const navigation = useNavigation();
+    const route = useRoute<RouteProp<RouteSetUpTab>>();
+    const { updatePartner } = route.params;
+
+    const [globalState, dispatch] = useContext(Store);
+    const { currentUser } = globalState;
+
     const [bdate, setBirthDate] = useState<DateObj>({
         title: "Birthday",
         createdAt: new Date(),
@@ -58,71 +73,159 @@ export const SetUpProfileTabs = () => {
     });;
     const [name, setName] = useState("");
     const [partnerEmail, setpartnerEmail] = useState("");
-    const [partnerId, setpartnerId] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [importantDates, setImportantDates] = useState<DateObj[]>([]);
-
+    const [partnerObj, setPartnerObj] = useState<Parse.Attributes | null>(null);
 
     const partnerIdChecker = async () => {
         const partnerIdQuery = new Parse.Query(Parse.User);
         partnerIdQuery.contains('email', partnerEmail);
-        const partnerIdQueryResult = await partnerIdQuery.find();
-        if (partnerIdQueryResult.length > 0) {
-            //TODO: An additional check to see if he alr has a partner 
-            setpartnerId(partnerIdQueryResult[0].id);
-            Alert.alert('Partner Found!');            
-        } else {
-            Alert.alert('Partner Not Found! Please check again');  
+        dispatch(userLoggingInit());
+
+        try {
+            const partnerIdQueryResult = await partnerIdQuery.first();
+            if (partnerIdQueryResult) {
+                if (partnerIdQueryResult.get("coupleId") === partnerIdQueryResult.id && !partnerIdQueryResult.get("partnerId")) {
+                    setPartnerObj(partnerIdQueryResult);
+                    Toast.show({
+                        type: "success",
+                        text1: "Request Sent Successfully"
+                    })
+                } else {
+                    Toast.show({
+                        type: "error",
+                        text1: "Your Partner is already attached"
+                    })
+                }
+                
+                dispatch(userLoggingEnd());           
+            } else {
+                Toast.show({
+                    type: "error",
+                    text1: "Partner not found"
+                })
+                dispatch(userLoggingEnd());  
+            }
+
+        } catch(e: any) {
+            Alert.alert(e.message);
         }
 
     };
 
+    const partnerIdCheckerAndUpdate = async () => {
+        dispatch(userLoggingInit());
+            try {
+                const result = await Parse.Cloud.run("sendPartnerRequest", {
+                    partnerEmail,
+                    userId: currentUser?.id
+                });
+                console.log(result, "result of the partnerId Checker")
+
+                switch (result) {
+                    case "Not Found":
+                        Toast.show({
+                            type: "error",
+                            text1: "Partner not found"
+                        })
+                        break;
+                    case "Your Partner is already attached":
+                        Toast.show({
+                            type: "error",
+                            text1: "Your Partner is already attached"
+                        })
+                        break;
+                    case "Request Sent":
+                        Toast.show({
+                            type: "success",
+                            text1: "Request Sent Successfully"
+                        })
+                        currentUser?.set("partnerId", "pending");
+                        break;
+
+                }
+                dispatch(userLoggingEnd()); 
+                navigation.goBack();
+
+            } catch(e: any) {
+                Toast.show({
+                    type: "error",
+                    text1: "Failed to Update"
+                })
+                dispatch(userLoggingEnd()); 
+                navigation.goBack();
+            }
+            
+    };
+
     return (
         <>
-            <ConfirmProfileInput
-            modalVisible={modalVisible}
-            handleModal={() => setModalVisible(false)} 
-            profileInputs={{
-                name: name,
-                partnerEmail: partnerEmail,
-                partnerId: partnerId,
-                bdate: bdate,
-                annidate: annidate,
-                importantDates: importantDates
-            }}
-            />
-            
-            <Swiper loop={false}>
-                <TextTab
-                text={"Give us your Name (nickname is fine too!)"} 
-                handleChange={setName}
+        {!updatePartner ?
+            <> 
+                <ConfirmProfileInput
+                modalVisible={modalVisible}
+                handleModal={() => setModalVisible(false)} 
+                profileInputs={{
+                    name: name,
+                    partnerEmail: partnerEmail,
+                    bdate: bdate,
+                    annidate: annidate,
+                    importantDates: importantDates
+                }}
+                partnerObj={partnerObj}
                 />
-                <TextTab
-                text={"What is your Partner's Email Address?"}  
-                handleChange={setpartnerEmail}
-                checker={partnerIdChecker}
-                />
-                <DateTab 
-                dateArray={importantDates} 
-                setDateArray={setImportantDates}
-                bdate={bdate}
-                annidate={annidate}
-                setBirthDate={setBirthDate}
-                setAnniDate={setAnniDate}
-                end={true}
-                handleModal={() => setModalVisible(true)}
-                />
-            </Swiper>
-            <CloseView>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <CloseButton 
-                    source={require("../../../assets/BaseApp/close.png")} 
+                
+                <Swiper loop={false}>
+                    <TextTab
+                    text={"Give us your Name (nickname is fine too!)"} 
+                    handleChange={setName}
                     />
-                </TouchableOpacity>  
-            </CloseView>
-        </>
+                    {!currentUser?.get("partnerId") ? 
+                    <TextTab
+                    text={"What is your Partner's Email Address?"}  
+                    handleChange={setpartnerEmail}
+                    checker={partnerIdChecker}
+                    /> : null}
+                    <DateTab 
+                    dateArray={importantDates} 
+                    setDateArray={setImportantDates}
+                    bdate={bdate}
+                    annidate={annidate}
+                    setBirthDate={setBirthDate}
+                    setAnniDate={setAnniDate}
+                    end={true}
+                    handleModal={() => setModalVisible(true)}
+                    />
+                </Swiper>
+                <CloseView>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <CloseButton 
+                        source={require("../../../assets/BaseApp/close.png")} 
+                        />
+                    </TouchableOpacity>  
+                </CloseView>
+            </>
+            
+            :
 
-    )
+            <>
+                <TextTab
+                    text={"What is your Partner's Email Address?"}  
+                    handleChange={setpartnerEmail}
+                    checker={partnerIdCheckerAndUpdate}
+                />
+                <CloseView>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <CloseButton 
+                        source={require("../../../assets/BaseApp/close.png")} 
+                        />
+                    </TouchableOpacity>  
+                </CloseView>
+            </>
+            }  
+        </>
+    )  
+         
 }
 
 const TextTab = ({text, handleChange, checker, end, handleModal}: {

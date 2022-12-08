@@ -4,10 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
 import { Camera } from 'react-native-vision-camera';
-import { Alert } from 'react-native';
+import { Alert, Image, Modal, Text, TextProps, TouchableOpacity, View } from 'react-native';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Fontisto from 'react-native-vector-icons/Fontisto';
+import FastImage from 'react-native-fast-image';
+import Toast from 'react-native-toast-message';
 
 import { HomePage } from './src/components/HomePage';
 import { Stories } from './src/components/Stories';
@@ -25,6 +27,7 @@ import { userLoggingEnd, userLogin } from './src/data/actions';
 
 import { LoginStackParamList, UserStackParamList, UserOverallStackParamList } from './types';
 
+
 const TabLogin = createNativeStackNavigator<LoginStackParamList>();
 const TabUserOverall = createNativeStackNavigator<UserOverallStackParamList>();
 const TabUser = createMaterialBottomTabNavigator<UserStackParamList>();
@@ -38,6 +41,7 @@ const App = () => {
   
   useEffect(() => {
     const getCurrentUser = async () => {
+      console.log("refresh current User")
       try {
         const user = await Parse.User.currentAsync();
         dispatch(userLogin(user));
@@ -73,10 +77,17 @@ const App = () => {
     {!initLoading ?
     <NavigationContainer>
       {currentUser ? (
+        <>
+          <ModalForPartner
+            userId={currentUser.id}
+            partnerId={currentUser.get("pendingPartnerDetails")?.["partnerId"]}
+            partnerEmail={currentUser.get("pendingPartnerDetails")?.["partnerEmail"]}
+            partnerPic={currentUser.get("pendingPartnerDetails")?.["partnerPic"]}
+            />
         <TabUserOverall.Navigator
           screenOptions={({navigation}) => ({
             headerRight: () => (<UserIcon directToProfile={() => {navigation.navigate('UserProfile')}} />),
-            title: `Welcome ${currentUser.get("avatarName")}`,
+            title: `Welcome ${currentUser.get("avatarName") || ""}`,
             headerStyle: {
               backgroundColor: 'white',
             },
@@ -99,6 +110,7 @@ const App = () => {
             presentation: 'modal', 
             headerShown: false}}/>
         </TabUserOverall.Navigator>
+        </>
         ) : (
         <TabLogin.Navigator>
           <TabLogin.Screen name="Login" component={LoginPage} />
@@ -157,5 +169,72 @@ const UserApp = () => (
   </TabUser.Navigator>
 
 );
+
+
+const ModalForPartner = (props : {
+  userId: string | undefined;
+  partnerId: string | undefined;
+  partnerEmail: string | undefined;
+  partnerPic: string | undefined;
+}) => {
+  
+  const [visible, setVisible] = useState(!!props.partnerId);
+  const dummyProfilePic = require("./assets/BaseApp/account.png");
+  const dummyProfilePicUri = Image.resolveAssetSource(dummyProfilePic).uri;
+
+
+  const handlePartner = async (keyword: "Accept"|"Reject") => {
+    try {
+      await Parse.Cloud.run(`partner${keyword}`, {
+        userId: props.userId,
+        partnerId: props.partnerId
+      });
+      Toast.show({
+        type: "success",
+        text1: `Partner ${keyword}ed!`
+      })
+      setVisible(false);
+    } catch (e) {
+      Toast.show({
+        type: "error",
+        text1: "Error, please try again!"
+      })
+      setVisible(false);
+    }
+  }
+
+
+  return (
+    <Modal
+      visible={visible}
+    >
+      <View style={{alignItems: "center", justifyContent: "center", width: "100%", height: "100%", borderWidth: 1}}>
+      <View style={{flex: 1, maxHeight: "15%", width: "20%"}}>
+        <FastImage
+          source={{ uri: props.partnerPic || dummyProfilePicUri }}
+          resizeMode={"contain"}
+          style={{flex: 1, width: undefined, height: undefined}}  
+        />
+      </View>
+      <Text style={{textAlign: "center"}}>{props.partnerEmail} wants to connect with you</Text>
+      <View style={{display: "flex", flexDirection: "row", position: "absolute", bottom: "20%", width: "100%", justifyContent: "space-around"}}>
+        <TouchableOpacity
+          style={{borderWidth: 1, padding: 15, borderRadius: 25, backgroundColor: "#00b761", width: "40%"}}
+          onPress={() => handlePartner("Accept")}>
+              <Text style={{textAlign: "center", color: "white"}}>Accept</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{borderWidth: 1, padding: 15, borderRadius: 25, backgroundColor: "#ff5003", width: "40%"}}
+          onPress={() => handlePartner("Reject")}>
+              <Text style={{textAlign: "center", color: "white"}}>Reject</Text>
+        </TouchableOpacity>
+      </View>
+      </View>
+
+    </Modal>
+  )
+}
+
+
 
 export default App;

@@ -135,9 +135,11 @@ export const EventModal = ({reminder, setModalVisible}: {
 
         if (indiv === "User") {
             reminderParseObj.set('userOrCoupleId', currentUser?.id);
+            reminderParseObj.set('userOrCouple', "user");
             reminderObj = { ...reminderObj, userOrCoupleId: currentUser?.id };
         } else {
             reminderParseObj.set('userOrCoupleId', currentUser?.get('coupleId'));
+            reminderParseObj.set('userOrCouple', "couple");
             reminderObj = { ...reminderObj, userOrCoupleId: currentUser?.get('coupleId') };
         }
         reminderParseObj.set('title', title);

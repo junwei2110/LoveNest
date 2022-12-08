@@ -7,4 +7,7 @@ declare module 'react-native-dotenv' {
     export const ATTRACTIONS_MEDIA_URL: string;
     export const NEA_WEATHER_API: string;
     export const GOOGLE_MAPS_API_KEY: string;
+    export const PACKAGE_NAME: string;
+    export const APP_NAME: string;
+    export const GCM_SENDER_ID: string;
   }

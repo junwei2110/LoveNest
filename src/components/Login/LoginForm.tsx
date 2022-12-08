@@ -25,10 +25,13 @@ export const LoginForm = ({navigation}: {navigation: Props['navigation']}) => {
         const passwordVal = password;
 
         Parse.User.logIn(usernameVal, passwordVal)
-            .then((loggedInUser) => {
+            .then(async (loggedInUser) => {
                 const currentUser = loggedInUser;
-                console.log(currentUser);
-                //await Parse.User.currentAsync();
+                
+                if (!currentUser?.get("coupleId")) {
+                    currentUser?.set("coupleId", currentUser?.id);
+                    await currentUser?.save();
+                }
                 dispatch(userLogin(currentUser));
             }).catch((e) => {
                 Alert.alert('Error!', e.message);

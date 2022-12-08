@@ -33,7 +33,7 @@ export const UserProfile = () => {
     
     const dummyProfilePic = require("../../../assets/BaseApp/account.png");
     const dummyProfilePicUri = Image.resolveAssetSource(dummyProfilePic).uri;
-    const currentProfilePicPath = currentUser && currentUser.get("profilePic").url() || dummyProfilePicUri;
+    const currentProfilePicPath = currentUser && currentUser.get("profilePic")?.url() || dummyProfilePicUri;
     const [photoPath, setPhotoPath] = useState(currentProfilePicPath);
 
     const devices = useCameraDevices();
@@ -106,7 +106,7 @@ export const UserProfile = () => {
         dispatch(userLogout());
     };
 
-
+    console.log(currentUser?.get("partnerId"), "partnerId");
 
     return (
         <> 
@@ -154,7 +154,16 @@ export const UserProfile = () => {
                 {firstTimerProfile &&
                 <Button 
                     title={"Complete your Profile"}
-                    onPress={() => navigation.navigate('SetUpProfile')}
+                    onPress={() => navigation.navigate('SetUpProfile', {
+                        updatePartner: false,
+                    })}
+                />}
+                {!firstTimerProfile && currentUser?.get("coupleId") === currentUser?.id && currentUser?.get("partnerId") !== "pending" &&
+                <Button 
+                    title={"Update Partner"}
+                    onPress={() => navigation.navigate('SetUpProfile', {
+                        updatePartner: true,
+                    })}
                 />}
                 <Text></Text>
                 <Button 

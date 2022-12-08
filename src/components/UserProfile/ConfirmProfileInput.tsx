@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Modal, View, Text, Button, TouchableOpacity, Alert } from 'react-native';
 import Parse from "parse/react-native.js";
-import { Store } from '../../data';
+
 import { ProfileInputs, DateObj } from './SetUpTabs';
 import { 
     CloseButton, 
@@ -14,15 +14,20 @@ import {
     DateTextInput,
     DateTitleView } from './styled';
 
+import { Store } from '../../data';
+import { userLoggingEnd, userLoggingInit } from '../../data/actions';
+
 
 
 export const ConfirmProfileInput = ({
     modalVisible, 
     handleModal,
-    profileInputs
+    profileInputs,
+    partnerObj,
 }: {modalVisible: boolean|undefined; 
-    handleModal: () => void
-    profileInputs: ProfileInputs
+    handleModal: () => void;
+    profileInputs: ProfileInputs;
+    partnerObj: Parse.Attributes|null
 }) => {
 
     const [globalState, dispatch] = useContext(Store);
@@ -31,21 +36,22 @@ export const ConfirmProfileInput = ({
     const handleUpdateProfileFirstTime = async () => {
 
         if (currentUser) {
-
-            let coupleId;
-            if (profileInputs.partnerId !== "") {
-                coupleId = profileInputs.partnerId + currentUser.id;
-            }
+            dispatch(userLoggingInit());
 
             try {
                 currentUser.set('firstTimerProfile', false);
                 currentUser.set('avatarName', profileInputs.name);
-                currentUser.set('partnerId', profileInputs.partnerId);
-                currentUser.set('coupleId', coupleId);
+                //currentUser.set('partnerId', profileInputs.partnerId);
+                currentUser.set('coupleId', currentUser.id);
                 await currentUser.save();
 
-                //TODO: Query the partner here and add the coupleId to the partner
                 
+                if (partnerObj) {
+                    await Parse.Cloud.run("sendPartnerRequest", {
+                        partnerEmail: partnerObj.get("email"),
+                        userId: currentUser?.id
+                    });
+                }
 
                 const reminderBdayObj = new Parse.Object('Reminder');
                 reminderBdayObj.set('title', profileInputs.bdate.title);
@@ -53,6 +59,7 @@ export const ConfirmProfileInput = ({
                 reminderBdayObj.set('recurrence', profileInputs.bdate.recurrence);
                 reminderBdayObj.set('completionStatus', false);
                 reminderBdayObj.set('userOrCoupleId', currentUser.id);
+                reminderBdayObj.set('userOrCouple', "couple");
                 await reminderBdayObj.save();
 
                 const reminderAnnidayObj = new Parse.Object('Reminder');
@@ -60,7 +67,8 @@ export const ConfirmProfileInput = ({
                 reminderAnnidayObj.set('dateTime', profileInputs.annidate.date?.toDateString());
                 reminderAnnidayObj.set('recurrence', profileInputs.annidate.recurrence);
                 reminderAnnidayObj.set('completionStatus', false);
-                reminderAnnidayObj.set('userOrCoupleId', coupleId);
+                reminderAnnidayObj.set('userOrCoupleId', currentUser.id);
+                reminderAnnidayObj.set('userOrCouple', "couple");
                 await reminderAnnidayObj.save();
 
                 profileInputs.importantDates?.forEach(async (dateObj) => {
@@ -70,13 +78,18 @@ export const ConfirmProfileInput = ({
                     reminderObj.set('recurrence', dateObj.recurrence);
                     reminderObj.set('completionStatus', false);
                     reminderObj.set('userOrCoupleId', currentUser.id);
+                    reminderAnnidayObj.set('userOrCouple', "user");
 
                     await reminderObj.save();
                 });
 
                 Alert.alert("Information saved!");
+                handleModal();
+                dispatch(userLoggingEnd()); 
 
             } catch(e: any) {
+                dispatch(userLoggingEnd());
+                handleModal(); 
                 Alert.alert(e.message);
             }
             

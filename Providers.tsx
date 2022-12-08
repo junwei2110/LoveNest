@@ -8,10 +8,12 @@ import App from "./App";
 import { Store, initialState } from './src/data';
 import { reducer } from './src/data/reducers';
 import { GlobalLoader } from './src/components/GlobalLoader';
+import { configurePushNotifications } from "./src/services/PushNotifications"
 
 Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize(APP_ID, JS_KEY);
 Parse.serverURL = SERVER_URL_BACK4APP;
+//configurePushNotifications();
 
 console.log("hello", SERVER_URL_BACK4APP);
 const Providers = () => {

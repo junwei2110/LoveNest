@@ -6,6 +6,7 @@ export const EventsView = styled.ScrollView.attrs({
             flexGrow: 1,
             flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: "center",
             width: "100%"
                  
         },

@@ -25,8 +25,6 @@ export const CalendarView = () => {
 
 
     const { currentUser, reminderArray, filteredArray, useFilteredArray } = globalState;
-    console.log(useFilteredArray);
-    console.log(filteredArray);
 
     useEffect(() => {
 
@@ -91,7 +89,7 @@ export const CalendarView = () => {
             </View>
 
             <EventsView>
-                {loading && <Loader fullScreen={false} screenOpacity={'transparent'}/>}
+                {loading && <Loader fullScreen={false} screenOpacity={'transparent'} />}
                 {!useFilteredArray && reminderArray?.length ?
                     reminderArray.map((reminder, idx) => (
                         <EventTab
@@ -110,7 +108,6 @@ export const CalendarView = () => {
                         userId={currentUser?.id}
                         />
                 )) : null}
-                {/*Add an icon above the text */}
                 {!useFilteredArray && !reminderArray?.length && !loading &&
                     <Text style={styles.emptyText as TextProps}>
                         Oh it seems like you do not have any upcoming events

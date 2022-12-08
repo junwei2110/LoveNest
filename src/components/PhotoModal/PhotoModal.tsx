@@ -22,7 +22,9 @@ export type SetUpStackParamList = {
         devices?: Record<string, CameraDevice>;
         setNewPhoto?: (val: string) => void
     };
-    SetUpProfile?: undefined;
+    SetUpProfile?: {
+        updatePartner: boolean;
+    };
     MediaSearch?: {
         activeUri: string;
     };

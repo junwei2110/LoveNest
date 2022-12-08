@@ -23,9 +23,9 @@ export const CalendarDateView = () => {
     useEffect(() => {
         if (reminderArray?.length) {
             let freshMarkedDates = { ...markedDatesMap };
-            const userEvent = {key: 'user', color: 'blue', selectedDotColor: 'blue'};
-            const coupleEvent = {key: 'couple', color: 'green', selectedDotColor: 'blue'};
-            reminderArray?.forEach((reminder) => {
+            const userEvent = { color: 'blue', selectedDotColor: 'blue' };
+            const coupleEvent = { color: 'green', selectedDotColor: 'blue' };
+            reminderArray?.map((reminder) => {
                 const reminderDate = YYYYMMDDFormat(reminder.dateTime);
                 const dotsArr = freshMarkedDates?.[reminderDate]?.dots || [];
                 if (reminder.userOrCoupleId === currentUser?.id) {
