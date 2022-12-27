@@ -1,7 +1,7 @@
 import React, { useEffect, useContext, useState } from 'react';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationContainer } from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
 import { Camera } from 'react-native-vision-camera';
 import { Alert, Image, Modal, Text, TextProps, TouchableOpacity, View } from 'react-native';
@@ -10,6 +10,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import FastImage from 'react-native-fast-image';
 import Toast from 'react-native-toast-message';
+import messaging from "@react-native-firebase/messaging";
 
 import { HomePage } from './src/components/HomePage';
 import { Stories } from './src/components/Stories';
@@ -21,11 +22,14 @@ import { PhotoTaken } from './src/components/PhotoModal/PhotoTaken';
 import { SetUpProfileTabs } from './src/components/UserProfile/SetUpTabs';
 import { UserIcon } from './src/components/UserProfile/Icon';
 import { LoginPage } from "./src/components/Login";
+import { PasswordReset } from "./src/components/Login/PasswordReset";
 import { SignUpPage } from "./src/components/SignUp";
 import { Store } from './src/data';
-import { userLoggingEnd, userLogin } from './src/data/actions';
+import { userLoggingEnd, userLoggingInit, userLogin } from './src/data/actions';
+import { localNotification } from "./src/services/PushNotifications"
+import { linking } from './src/config/LinkingConfig';
 
-import { LoginStackParamList, UserStackParamList, UserOverallStackParamList } from './types';
+import { LoginStackParamList, UserStackParamList, UserOverallStackParamList, OverallParamList } from './types';
 
 
 const TabLogin = createNativeStackNavigator<LoginStackParamList>();
@@ -40,19 +44,7 @@ const App = () => {
   const [initLoading, setInitLoading] = useState(true);
   
   useEffect(() => {
-    const getCurrentUser = async () => {
-      console.log("refresh current User")
-      try {
-        const user = await Parse.User.currentAsync();
-        dispatch(userLogin(user));
-        setInitLoading(false);
-      } catch(e) {
-        dispatch(userLoggingEnd());
-        setInitLoading(false);
-        Alert.alert("Failed to retrieve user credentials. Please try again");
-      }
-      
-    };
+
     const checkCameraPermission = async () => {
       let status = await Camera.getCameraPermissionStatus();
       if (status !== 'authorized') {
@@ -68,14 +60,37 @@ const App = () => {
     
     getCurrentUser();
     checkCameraPermission();
+
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      console.log("onMessage", remoteMessage)
+      localNotification(remoteMessage)
+
+    })
+
+    return () => unsubscribe()
       
   }, []);
 
+  const getCurrentUser = async () => {
+    try {
+      setInitLoading(true);
+      dispatch(userLoggingInit());
+      let user = await Parse.User.currentAsync();
+      user = await user?.fetch() || null;
+      dispatch(userLogin(user));
+      setInitLoading(false);
+    } catch(e) {
+      dispatch(userLoggingEnd());
+      setInitLoading(false);
+      Alert.alert("Failed to retrieve user credentials. Please try again");
+    }
+    
+  };
 
   return (
     <>
     {!initLoading ?
-    <NavigationContainer>
+    <NavigationContainer linking={linking as LinkingOptions<OverallParamList>}>
       {currentUser ? (
         <>
           <ModalForPartner
@@ -95,7 +110,9 @@ const App = () => {
               fontWeight: 'normal',
             },
           })}>
-          <TabUserOverall.Screen name="UserApp" component={UserApp} />
+          <TabUserOverall.Screen name="UserApp">
+            {() => <UserApp {...{getCurrentUser}} />}
+          </TabUserOverall.Screen>
           <TabUserOverall.Screen name="UserProfile" component={UserProfile} />
           <TabUserOverall.Screen name="SetUpProfile" component={SetUpProfileTabs} 
           options={{ 
@@ -115,7 +132,7 @@ const App = () => {
         <TabLogin.Navigator>
           <TabLogin.Screen name="Login" component={LoginPage} />
           <TabLogin.Screen name="SignUp" component={SignUpPage} />
-          <TabLogin.Screen name="ResetPassword" component={LoginPage} />
+          <TabLogin.Screen name="ResetPassword" component={PasswordReset} />
         </TabLogin.Navigator>
       )}
     </NavigationContainer>
@@ -125,7 +142,9 @@ const App = () => {
 };
 
 
-const UserApp = () => (
+const UserApp = ({getCurrentUser}: {
+  getCurrentUser: () => void;
+}) => (
 
   <TabUser.Navigator
     screenOptions={({route}) => ({
@@ -147,11 +166,12 @@ const UserApp = () => (
     })}>
     <TabUser.Screen 
       name="Home" 
-      component={HomePage} 
       options={{
         tabBarColor: "#f0516f" 
       }}  
-    />
+    >
+      {() => <HomePage {...{getCurrentUser}} />}
+    </TabUser.Screen>
     <TabUser.Screen name="Stories" component={Stories} 
     options={{
       tabBarColor: "#03045e" 

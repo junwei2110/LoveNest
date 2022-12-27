@@ -20,3 +20,5 @@ export type UserOverallStackParamList = {
   PhotoModal: undefined;
   PhotoTaken: undefined;
 };
+
+export type OverallParamList = UserOverallStackParamList & UserStackParamList & LoginStackParamList

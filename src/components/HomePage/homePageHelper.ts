@@ -29,7 +29,7 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
         const dateTime: Date = reminder && new Date(reminder.get('dateTime')?.toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
         const checkItems: ChecklistItem[] = reminder && reminder.get('checkItems');
         const completionStatus: boolean = reminder && reminder.get('completionStatus');
-        const currentDateTime = new Date();
+        const currentDateTime = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
 
         let newReminderObj: GlobalReminderObj = {
             id,

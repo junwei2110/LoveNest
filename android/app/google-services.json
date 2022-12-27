@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "224070057035-n9o4uggq3dfmqqskns6efags7rju9c3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lovenest",
+            "certificate_hash": "0b104eb2f3970c80ff79c3318b618e099cf5038b"
+          }
+        },
+        {
           "client_id": "224070057035-5a59nsspg69bab5rp97glq6d4dqqktca.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -1,20 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text, Button, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useCameraDevices, Camera } from 'react-native-vision-camera';
-import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
 import { CalendarDateView } from "./CalendarDates";
 import { CalendarView } from './CalendarEvents';
-import { ImageAnimation } from './ImageAnimation';
 
+type HomeRouteProp = {
+    Home: {
+        refresh?: string;
 
+    }
+}
 
-export const HomePage = () => {
+export const HomePage = ({getCurrentUser} : {
+    getCurrentUser: () => void;
+}) => {
 
-    const navigation = useNavigation();
-    const devices = useCameraDevices();
-    const device = devices.front;
+    //To get the refresh param, push notification is "linking": "lovenest://home?refresh=true"
+    const route = useRoute<RouteProp<HomeRouteProp>>();    
+    const refresh = route.params?.refresh;
+    useEffect(() => {
+        if (refresh === "true") {
+            getCurrentUser();
+        }
+    }, [refresh]);
 
     return (
         <View style={{

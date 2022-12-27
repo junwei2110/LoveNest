@@ -67,7 +67,15 @@ export const LoginForm = ({navigation}: {navigation: Props['navigation']}) => {
                 size={20} 
                 textComponent={<Text>   Sign Up Alone or with Your Partner  </Text>}
                 onPress={() => navigation.navigate('SignUp')}
-                isChecked={false}
+                isChecked={true}
+                disableBuiltInState
+            />
+            <Text></Text>
+            <BouncyCheckbox 
+                size={20} 
+                textComponent={<Text>   Forget your password?  </Text>}
+                onPress={() => navigation.navigate('ResetPassword')}
+                isChecked={true}
                 disableBuiltInState
             />
         </>

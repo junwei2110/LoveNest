@@ -265,6 +265,8 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
+    implementation 'com.google.firebase:firebase-analytics:17.3.0'
+
     implementation platform('com.google.firebase:firebase-bom:31.1.0')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

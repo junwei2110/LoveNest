@@ -8,6 +8,7 @@ import * as ImagePicker from "react-native-image-picker"
 import { MediaType } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 import Toast from 'react-native-toast-message';
+import FastImage from 'react-native-fast-image';
 
 import { SetUpProfilePicView, ImageBox2, ProfilePic, ProfilePicUpdateBox, CloseView, CloseButton } from "./styled";
 
@@ -111,9 +112,10 @@ export const UserProfile = () => {
     return (
         <> 
             <Modal visible={isVisible}>
-                <ProfilePic
+                <FastImage
                     source={{uri: photoPath}}
                     resizeMode="contain"
+                    style={{flex:1, width: undefined, height: undefined}}
                 />
                 <CloseView>
                     <TouchableOpacity
