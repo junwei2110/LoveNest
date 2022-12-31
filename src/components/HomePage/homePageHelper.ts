@@ -41,10 +41,11 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
             completionStatus,
         }
 
+        const oneDayMS = 24 * 60 * 60* 1000;
         switch (recurrence) {
             case "Once":
             case "One-Time":
-                if (dateTime.getTime() < currentDateTime.getTime()) {
+                if (dateTime.getTime() < (currentDateTime.getTime() - oneDayMS)) {
                     reminder.set('completionStatus', true);
                     reminder.save().then(() => console.log("reminder saved"));
                 } else {

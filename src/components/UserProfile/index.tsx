@@ -107,7 +107,6 @@ export const UserProfile = () => {
         dispatch(userLogout());
     };
 
-    console.log(currentUser?.get("partnerId"), "partnerId");
 
     return (
         <> 

@@ -16,6 +16,7 @@ export type NavigateBackToPhotos = {
         id?: string;
         caption?: string;
         tags?: Record<string, any>[];
+        refresh?: string;
     }
 }
 
@@ -61,6 +62,10 @@ export const PicDescModal = ({photoUri} : {
             savePicQuery.set('userOrCoupleId', currentUser?.get("coupleId"));
             savePicQuery.set('photoStorage', responseFile);
             await savePicQuery.save();
+
+            await Parse.Cloud.run("photoUpdate", {
+                partnerId: currentUser?.get("partnerId")
+            });
 
             dispatch(userLoggingEnd());
             Toast.show({

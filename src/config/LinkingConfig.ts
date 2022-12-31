@@ -35,9 +35,19 @@ export const linking = {
     getInitialURL: async () => {
         PushNotification.popInitialNotification(notification => {
             if (!notification) return;
-      
+
+            const regexRefreshTrue = /.*\?refresh=true$/;
+
             const {linking = null} = notification?.data || {};
-            linking && Linking.openURL(linking); 
+            let linkUrl = linking;
+
+            if (linking && linking.match(regexRefreshTrue)) {
+                const urlArr = linking.split("?");
+                linkUrl = urlArr[0];
+
+            }
+
+            linkUrl && Linking.openURL(linkUrl); 
           });
       
           // this is the default return

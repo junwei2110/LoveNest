@@ -175,6 +175,12 @@ export const EventModal = ({reminder, setModalVisible}: {
             }
             dispatch(updateReminders(updatedArr));
             await reminderParseObj.save();
+
+            if (indiv === "Couple") {
+                await Parse.Cloud.run("reminderUpdate", {
+                    partnerId: currentUser?.get("partnerId")
+                });
+            }
             
             dispatch(userLoggingEnd());
             Alert.alert("Reminder Saved");
@@ -201,6 +207,12 @@ export const EventModal = ({reminder, setModalVisible}: {
                 dispatch(updateReminders(newReminderArr));
                 //TODO: Add animation to remove the reminder
             };
+
+            if (indiv === "Couple") {
+                await Parse.Cloud.run("reminderUpdate", {
+                    partnerId: currentUser?.get("partnerId")
+                });
+            }
 
             dispatch(userLoggingEnd());
 

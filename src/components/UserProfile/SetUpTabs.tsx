@@ -5,6 +5,7 @@ import Swiper from 'react-native-swiper';
 import DatePicker from 'react-native-date-picker';
 import Parse from "parse/react-native.js";
 import Toast from 'react-native-toast-message';
+import messaging from "@react-native-firebase/messaging";
 
 
 import { 
@@ -89,7 +90,7 @@ export const SetUpProfileTabs = () => {
                     setPartnerObj(partnerIdQueryResult);
                     Toast.show({
                         type: "success",
-                        text1: "Request Sent Successfully"
+                        text1: "Partner found!"
                     })
                 } else {
                     Toast.show({
@@ -114,11 +115,13 @@ export const SetUpProfileTabs = () => {
     };
 
     const partnerIdCheckerAndUpdate = async () => {
+        const deviceToken = await messaging().getToken();
         dispatch(userLoggingInit());
             try {
                 const result = await Parse.Cloud.run("sendPartnerRequest", {
                     partnerEmail,
-                    userId: currentUser?.id
+                    userId: currentUser?.id,
+                    deviceToken
                 });
                 console.log(result, "result of the partnerId Checker")
 
@@ -296,7 +299,6 @@ const DateTab = ({dateArray, setDateArray, bdate, annidate, setBirthDate, setAnn
         
     }
 
-    console.log("Date Tab");
     return(
         <ImportantDatesView>
             <DateTabTitle>
@@ -364,7 +366,7 @@ const DateTabComponent = ({index, text, dateArray, setDateArray, singleDate, set
         date = singleDate.date
         title = singleDate.title;
     }
-    console.log("Date Tab Component");
+
 
     const handleDateConfirm = (dateInput : Date) => {
         setInitSetDate(true);

@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { Text, Button, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 
 import { CalendarDateView } from "./CalendarDates";
 import { CalendarView } from './CalendarEvents';
 
-type HomeRouteProp = {
+export type HomeRouteProp = {
     Home: {
         refresh?: string;
 
@@ -19,11 +19,14 @@ export const HomePage = ({getCurrentUser} : {
     //To get the refresh param, push notification is "linking": "lovenest://home?refresh=true"
     const route = useRoute<RouteProp<HomeRouteProp>>();    
     const refresh = route.params?.refresh;
+
     useEffect(() => {
         if (refresh === "true") {
             getCurrentUser();
         }
-    }, [refresh]);
+
+    }, [route.params]);
+
 
     return (
         <View style={{

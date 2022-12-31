@@ -93,8 +93,6 @@ export const PhotoModal = () => {
     };
 
     const switchCameraView = () => {
-        console.log(devices?.front);
-        console.log(device);
         if (device === devices?.front) {
             setDevice(devices?.back);
         } else {

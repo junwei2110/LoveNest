@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LoginStackParamList } from '../../../types';
 import { StackActions } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
+import messaging from "@react-native-firebase/messaging";
 
 type Props = NativeStackScreenProps<LoginStackParamList, 'Login'>;
 
@@ -14,29 +15,38 @@ export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
     const [password1, setPassword1] = useState("");
     const [password2, setPassword2] = useState("");
     
-    const userRegistration = () => {
+    const userRegistration = async () => {
         if (password1 !== password2) {
             return Alert.alert('Error!', 'Please ensure re-typed password is the same')
         }
 
         const usernameVal = email;
         const passwordVal = password1;
+        const deviceToken = await messaging().getToken();
         
         const signUpAddParams = {
             email: usernameVal,
-            firstTimerProfile: true
+            firstTimerProfile: true,
+            deviceRegistered: deviceToken
         }
 
-        Parse.User.signUp(usernameVal, passwordVal, signUpAddParams)
-            .then(async (_createdUser) => {
-                await Parse.User.logOut();
-                Alert.alert('Success!', `User was successfully created. Please verify your email to login`);
-                navigation.dispatch(StackActions.popToTop());
-                return true;
-            }).catch((e) => {
-                Alert.alert('Error!', e.message);
-                return false;
+        try {
+            const newUser = await Parse.User.signUp(usernameVal, passwordVal, signUpAddParams)
+
+            console.log("just signed up", newUser.id);
+            await Parse.Cloud.run("firstSignUpUserIdInstallation", {
+                userId: newUser.id,
+                deviceToken
             });
+
+            await Parse.User.logOut();
+            Alert.alert('Success!', `User was successfully created. Please verify your email to login`);
+            navigation.dispatch(StackActions.popToTop());
+
+        } catch(e: any) {
+            Alert.alert('Error!', e.message);
+        }
+        
     };
 
 

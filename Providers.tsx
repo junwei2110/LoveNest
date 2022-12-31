@@ -18,7 +18,6 @@ Parse.serverURL = SERVER_URL_BACK4APP;
 
 const Providers = () => {
 
-  //const appState = useRef(AppState.currentState);
   const [globalState, dispatch] = useReducer(reducer, initialState);
 
   return (

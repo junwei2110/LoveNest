@@ -46,7 +46,8 @@ export const PhotoTaken = () => {
         <>
         <InPageModal
             visible={isDescModalVisible}
-            size={70}>
+            size={70}
+            >
             <>
                 <CloseButton
                 handleModal={() => setDescModalVisible(false)}

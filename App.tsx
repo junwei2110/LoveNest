@@ -98,6 +98,7 @@ const App = () => {
             partnerId={currentUser.get("pendingPartnerDetails")?.["partnerId"]}
             partnerEmail={currentUser.get("pendingPartnerDetails")?.["partnerEmail"]}
             partnerPic={currentUser.get("pendingPartnerDetails")?.["partnerPic"]}
+            refresh={getCurrentUser}
             />
         <TabUserOverall.Navigator
           screenOptions={({navigation}) => ({
@@ -196,6 +197,7 @@ const ModalForPartner = (props : {
   partnerId: string | undefined;
   partnerEmail: string | undefined;
   partnerPic: string | undefined;
+  refresh: () => void;
 }) => {
   
   const [visible, setVisible] = useState(!!props.partnerId);
@@ -205,16 +207,20 @@ const ModalForPartner = (props : {
 
   const handlePartner = async (keyword: "Accept"|"Reject") => {
     try {
+      const deviceToken = await messaging().getToken();
       await Parse.Cloud.run(`partner${keyword}`, {
         userId: props.userId,
-        partnerId: props.partnerId
+        partnerId: props.partnerId,
+        deviceToken
       });
       Toast.show({
         type: "success",
         text1: `Partner ${keyword}ed!`
       })
       setVisible(false);
-    } catch (e) {
+      props.refresh();
+    } catch (e:any) {
+      console.log(e.message)
       Toast.show({
         type: "error",
         text1: "Error, please try again!"

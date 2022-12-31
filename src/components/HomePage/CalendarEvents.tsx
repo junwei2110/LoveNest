@@ -15,8 +15,8 @@ import { Loader } from '../../common/Loader/Loader';
 
 
 
-export const CalendarView = () => {
 
+export const CalendarView = () => {
     const [loading, setLoading] = useState(true);
     const [createNewVisible, setNewVisible] = useState(false);
     const [currentVisible, setCurrentVisible] = useState(false);
@@ -26,10 +26,10 @@ export const CalendarView = () => {
 
     const { currentUser, reminderArray, filteredArray, useFilteredArray } = globalState;
 
-    useEffect(() => {
 
+    useEffect(() => {
         const remindersArrayRetrieval = async () => {
-            if (currentUser && reminderArray === null) {
+            if (currentUser) {
                 const newReminderArray = await getReminders(currentUser);
                 const modifiedArray = sortReminders(newReminderArray)
                 dispatch(retrieveReminders(modifiedArray));
@@ -37,7 +37,8 @@ export const CalendarView = () => {
             setLoading(false);
         }
         remindersArrayRetrieval();
-    }, []);
+
+    }, [currentUser]);
 
 
     const handleCurrentEvent = (reminder: GlobalReminderObj) => {

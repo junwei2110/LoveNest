@@ -27,7 +27,7 @@ export const MediaSearch = () => {
 
         checkCameraPermission();
 
-    })
+    }, [])
 
     const onCamHandle = () => {
         if (camPermStatus) {

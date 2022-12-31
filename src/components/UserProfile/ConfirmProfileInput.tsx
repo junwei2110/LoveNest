@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 import { Modal, View, Text, Button, TouchableOpacity, Alert } from 'react-native';
 import Parse from "parse/react-native.js";
+import messaging from "@react-native-firebase/messaging";
+import { useNavigation } from '@react-navigation/native';
 
 import { ProfileInputs, DateObj } from './SetUpTabs';
 import { 
@@ -19,6 +21,7 @@ import { userLoggingEnd, userLoggingInit } from '../../data/actions';
 
 
 
+
 export const ConfirmProfileInput = ({
     modalVisible, 
     handleModal,
@@ -31,7 +34,8 @@ export const ConfirmProfileInput = ({
 }) => {
 
     const [globalState, dispatch] = useContext(Store);
-    const {currentUser} = globalState
+    const {currentUser} = globalState;
+    const navigation = useNavigation();
 
     const handleUpdateProfileFirstTime = async () => {
 
@@ -47,9 +51,11 @@ export const ConfirmProfileInput = ({
 
                 
                 if (partnerObj) {
+                    const deviceToken = await messaging().getToken();
                     await Parse.Cloud.run("sendPartnerRequest", {
-                        partnerEmail: partnerObj.get("email"),
-                        userId: currentUser?.id
+                        partnerEmail: profileInputs.partnerEmail,
+                        userId: currentUser?.id,
+                        deviceToken
                     });
                 }
 
@@ -85,11 +91,13 @@ export const ConfirmProfileInput = ({
 
                 Alert.alert("Information saved!");
                 handleModal();
-                dispatch(userLoggingEnd()); 
+                dispatch(userLoggingEnd());
+                navigation.goBack(); 
 
             } catch(e: any) {
                 dispatch(userLoggingEnd());
                 handleModal(); 
+                navigation.goBack(); 
                 Alert.alert(e.message);
             }
             

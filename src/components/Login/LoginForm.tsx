@@ -3,6 +3,9 @@ import { Alert, Text } from 'react-native';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Parse from "parse/react-native.js";
+import messaging from "@react-native-firebase/messaging";
+import {APP_NAME, GCM_SENDER_ID, PACKAGE_NAME} from 'react-native-dotenv';
+import uuid from 'react-native-uuid';
 
 import { userLoggingInit, userLogin, userLoginFailure } from '../../data/actions';
 import { LoginTextInput, LoginImage, LoginButton } from './styled';
@@ -26,13 +29,20 @@ export const LoginForm = ({navigation}: {navigation: Props['navigation']}) => {
 
         Parse.User.logIn(usernameVal, passwordVal)
             .then(async (loggedInUser) => {
-                const currentUser = loggedInUser;
                 
-                if (!currentUser?.get("coupleId")) {
-                    currentUser?.set("coupleId", currentUser?.id);
-                    await currentUser?.save();
+                const deviceToken = await messaging().getToken();
+
+                await Parse.Cloud.run("updateUserIdInstallation", {
+                    deviceToken,
+                    userId: loggedInUser.id,
+                });
+
+                if (!loggedInUser?.get("coupleId")) {
+                    loggedInUser?.set("coupleId", loggedInUser?.id);
+                    await loggedInUser?.save();
                 }
-                dispatch(userLogin(currentUser));
+                dispatch(userLogin(loggedInUser));
+
             }).catch((e) => {
                 Alert.alert('Error!', e.message);
                 dispatch(userLoginFailure());

@@ -31,6 +31,7 @@ export const ImageView = () => {
     const route = useRoute<RouteProp<NavigateBackToPhotos>>();
     
     const [loading, setLoading] = useState(true);
+    const [initialFetch, setInitialFetch] = useState(true);
     const [photoArr, setPhotoArr] = useState<FlatListImages[]>([]);
     const [activeImg, setActiveImg] = useState<ImageObj | undefined| null>(null);
 
@@ -38,6 +39,7 @@ export const ImageView = () => {
     const newPhotoUri = route.params?.newPhotoUri;
     const caption = route.params?.caption;
     const tags = route.params?.tags;
+    const refresh = route.params?.refresh;
 
     const onPressImg = (img: ImageObj) => {
         setActiveImg(img);
@@ -70,9 +72,14 @@ export const ImageView = () => {
         }
     }
 
+
     useEffect(() => {
-        retrieveImagesFromParse();
-    }, []);
+        if (initialFetch || refresh === "true") {
+            retrieveImagesFromParse();
+            setInitialFetch(false);
+        } 
+        
+    }, [route.params]);
 
     useEffect(() => {
         if (id && newPhotoUri) {
