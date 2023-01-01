@@ -6,10 +6,12 @@ export interface IState {
     currentUser: Parse.Attributes|null;
     loading: boolean;
     reminderArray: GlobalReminderObj[]|null;
+    filteredArray: GlobalReminderObj[]|null;
+    useFilteredArray: boolean;
 };
   
 export type Action = 
-    LoggingAction | LoggingActionEnd | LoginAction | LoginActionFail | LogoutAction | RetrieveReminders | UpdateReminders; //Add more actions here
+    LoggingAction | LoggingActionEnd | LoginAction | LoginActionFail | LogoutAction | RetrieveReminders | UpdateReminders | FilterReminders | ClearFilterReminders; //Add more actions here
 
 export type LoggingAction = {
     type: action_types.USER_LOGGING_INIT;
@@ -44,3 +46,12 @@ export type UpdateReminders = {
 
 };
 
+export type FilterReminders = {
+    type: action_types.FILTER_REMINDERS;
+    payload: GlobalReminderObj[];
+
+};
+
+export type ClearFilterReminders = {
+    type: action_types.CLEAR_FILTER_REMINDERS;
+};

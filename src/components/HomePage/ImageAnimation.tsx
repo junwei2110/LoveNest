@@ -76,7 +76,7 @@ export const ImageAnimation = () => {
                     textAlign: "center",
                     position: "absolute",
                     top: "82%",
-                    left: "55%",
+                    right: "2%",
                     backgroundColor: "white",
                     borderRadius: 30,
                     width: "35%",

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "224070057035",
+    "project_id": "lovenest-76e4e",
+    "storage_bucket": "lovenest-76e4e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224070057035:android:1e9721d240cbb5da8f21ce",
+        "android_client_info": {
+          "package_name": "com.lovenest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "224070057035-n9o4uggq3dfmqqskns6efags7rju9c3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lovenest",
+            "certificate_hash": "0b104eb2f3970c80ff79c3318b618e099cf5038b"
+          }
+        },
+        {
+          "client_id": "224070057035-5a59nsspg69bab5rp97glq6d4dqqktca.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaG8GjvxlkAkASNSXg64U5yegKP2BApJI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "224070057035-5a59nsspg69bab5rp97glq6d4dqqktca.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

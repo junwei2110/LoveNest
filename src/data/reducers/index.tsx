@@ -41,6 +41,18 @@ export const reducer = (state: IState, action: Action): IState => {
           ...state,
           reminderArray: action.payload
         }
+      case action_types.FILTER_REMINDERS:
+        return {
+          ...state,
+          filteredArray: action.payload,
+          useFilteredArray: true
+        }
+      case action_types.CLEAR_FILTER_REMINDERS:
+        return {
+          ...state,
+          filteredArray: null,
+          useFilteredArray: false
+        }
       default:
         return state;
     }

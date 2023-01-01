@@ -9,7 +9,7 @@ export const getReminders = async (currentUser: Parse.Attributes) => {
         reminderQuery.containedIn('userOrCoupleId', [currentUser.id, coupleId]);
         reminderQuery.equalTo('completionStatus', false);
         const reminders = await reminderQuery.find();
-        
+
         return reminders; 
 
 };
@@ -22,15 +22,14 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
 
 
     const modifiedRemArr: GlobalReminderObj[] = reminderArray.map((reminder) => {
-        
         const id: string = reminder && reminder.id;
         const title: string = reminder && reminder.get('title');
         const recurrence: string = reminder && reminder.get('recurrence');
         const userOrCoupleId: string = reminder && reminder.get('userOrCoupleId');
-        const dateTime: Date = reminder && new Date(reminder.get('dateTime'));
+        const dateTime: Date = reminder && new Date(reminder.get('dateTime')?.toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
         const checkItems: ChecklistItem[] = reminder && reminder.get('checkItems');
         const completionStatus: boolean = reminder && reminder.get('completionStatus');
-        const currentDateTime = new Date();
+        const currentDateTime = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
 
         let newReminderObj: GlobalReminderObj = {
             id,
@@ -42,9 +41,11 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
             completionStatus,
         }
 
+        const oneDayMS = 24 * 60 * 60* 1000;
         switch (recurrence) {
+            case "Once":
             case "One-Time":
-                if (dateTime.getTime() < currentDateTime.getTime()) {
+                if (dateTime.getTime() < (currentDateTime.getTime() - oneDayMS)) {
                     reminder.set('completionStatus', true);
                     reminder.save().then(() => console.log("reminder saved"));
                 } else {

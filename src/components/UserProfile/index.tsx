@@ -1,31 +1,31 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, Button, Image, Alert, Modal, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
 import { useCameraDevices, Camera, CameraDevice } from 'react-native-vision-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from "react-native-image-picker"
 import { MediaType } from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
+import Toast from 'react-native-toast-message';
+import FastImage from 'react-native-fast-image';
 
 import { SetUpProfilePicView, ImageBox2, ProfilePic, ProfilePicUpdateBox, CloseView, CloseButton } from "./styled";
 
-import { userLoggingInit, userLogout } from '../../data/actions';
+import { userLoggingInit, userLoggingEnd, userLogout } from '../../data/actions';
 import { Store } from '../../data';
+import { RouteDeviceParam, SetUpStackParamList } from '../PhotoModal/PhotoModal';
 
 
-type SetUpStackParamList = {
-    PhotoModal: {device: CameraDevice;
-        setNewPhoto: (val: string) => void};
-    SetUpProfile: undefined
-}
 
-type MediaOptions = {
+export type MediaOptions = {
     mediaType: MediaType
     includeBase64: boolean;
 }
 
 export const UserProfile = () => {
 
+    const route = useRoute<RouteProp<RouteDeviceParam>>()
     const navigation = useNavigation<NativeStackNavigationProp<SetUpStackParamList>>();
     const [globalState, dispatch] = useContext(Store);
     const { currentUser } = globalState;
@@ -34,12 +34,12 @@ export const UserProfile = () => {
     
     const dummyProfilePic = require("../../../assets/BaseApp/account.png");
     const dummyProfilePicUri = Image.resolveAssetSource(dummyProfilePic).uri;
-    const currentProfilePicPath = currentUser && currentUser.get("profilePic").url() || dummyProfilePicUri;
+    const currentProfilePicPath = currentUser && currentUser.get("profilePic")?.url() || dummyProfilePicUri;
     const [photoPath, setPhotoPath] = useState(currentProfilePicPath);
 
     const devices = useCameraDevices();
-    const device = devices.front;
     const [camPermStatus, setCamPermStatus] = useState(false);
+    const activeUri = route?.params?.activeUri;
 
     useEffect(() => {
         const checkCameraPermission = async () => {
@@ -50,57 +50,52 @@ export const UserProfile = () => {
         checkCameraPermission();
     }, [camPermStatus]);
 
-    /* Not required
     useEffect(() => {
+        if (activeUri) {
+            saveProfilePic(activeUri);
+        }
+    }, [activeUri]);
 
-        const getUserDetails = async () => {
-            const { currentUser } = globalState;
-            const parseQuery = new Parse.Query(Parse.User);
-            currentUser && parseQuery.equalTo('objectId', currentUser.id)
-            try {
-                const userDetails = await parseQuery.find();
-                const isUserFirstTimer = userDetails[0].get('firstTimerProfile');
-                const isUserPartnerFirstTimer = userDetails[0].get('firstTimerRelationship')
-                setFirstTimerProfile(isUserFirstTimer);
-                setFirstTimerRelationship(isUserPartnerFirstTimer);
-                setLoading(false);
-            } catch(e:any) {
-                Alert.alert("Error!", e.message);
-            };
-        }        
-        getUserDetails();
+    const saveProfilePic = async (activeUri: string) => {
+        try {
+            const base64ProfilePic = await RNFS.readFile(activeUri, 'base64');
+            const parseFile = new Parse.File("profilePic", {base64: base64ProfilePic});
+            const responseFile = await parseFile.save();
+            currentUser?.set('profilePic', responseFile);
+            await currentUser?.save();
+            setPhotoPath(activeUri)
+            dispatch(userLoggingEnd());
+            Toast.show({
+                type: "success",
+                text1: "Picture saved"
+            });
+        } catch(e) {
+            dispatch(userLoggingEnd());
+            Toast.show({
+                type: "error",
+                text1: "Picture failed to save"
+            });
 
-    }, [loading, firstTimerProfile, firstTimerRelationship])
-    */
+        }
+
+    }
+
     const handleChoosePhoto = () => {
         const options: MediaOptions = {
             mediaType: "photo",
             includeBase64: true,
           };
         ImagePicker.launchImageLibrary(options, async (response) => {
-            if (response.uri && response.base64 && currentUser) {
-            
-                console.log(response.uri);
-                
-                const parseFile = new Parse.File("ProfilePic", {base64: response.base64});
-                console.log(parseFile)
+            if (response.uri) {
                 try {
-                    const responseFile = await parseFile.save();
-                    console.log(responseFile)
-                    currentUser.set('profilePic', responseFile);
-                    console.log(currentUser);
-
-                    //TODO: Loading Screen to show uploading in process
-                    //TODO: Toast message to say picture is saved
-                    await currentUser.save();
-                    setPhotoPath(response.uri);
-                    Alert.alert("Picture saved!");
+                    navigation.navigate("PhotoTaken", {
+                        activeUri: response.uri  
+                    })
                     
                 } catch {
-                    console.log("Picture failed to save. Please try again");
-                    Alert.alert("Picture failed to save. Please try again");
+                    Alert.alert("Picture failed to resolve. Please try again");
                 }
-        }
+            }
         });
 
     };
@@ -113,13 +108,13 @@ export const UserProfile = () => {
     };
 
 
-
     return (
         <> 
             <Modal visible={isVisible}>
-                <ProfilePic
+                <FastImage
                     source={{uri: photoPath}}
                     resizeMode="contain"
+                    style={{flex:1, width: undefined, height: undefined}}
                 />
                 <CloseView>
                     <TouchableOpacity
@@ -129,9 +124,9 @@ export const UserProfile = () => {
                         resizeMode="contain" 
                         />
                     </TouchableOpacity>    
-                </CloseView>
-                
+                </CloseView>                
             </Modal>
+
             <View>
                 <Text></Text>
                 <SetUpProfilePicView>
@@ -143,12 +138,11 @@ export const UserProfile = () => {
                          />
                     </ImageBox2>
                     <ProfilePicUpdateBox>
-                        {device && camPermStatus &&
+                        {devices && camPermStatus &&
                         <Button 
                             title={"Take a Photo"}
                             onPress={() => navigation.navigate('PhotoModal', 
-                            {device: device,
-                            setNewPhoto: setPhotoPath})}
+                            {devices: devices as Record<string, CameraDevice>})}
                         />
                         }
                         <Button 
@@ -161,7 +155,16 @@ export const UserProfile = () => {
                 {firstTimerProfile &&
                 <Button 
                     title={"Complete your Profile"}
-                    onPress={() => navigation.navigate('SetUpProfile')}
+                    onPress={() => navigation.navigate('SetUpProfile', {
+                        updatePartner: false,
+                    })}
+                />}
+                {!firstTimerProfile && currentUser?.get("coupleId") === currentUser?.id && currentUser?.get("partnerId") !== "pending" &&
+                <Button 
+                    title={"Update Partner"}
+                    onPress={() => navigation.navigate('SetUpProfile', {
+                        updatePartner: true,
+                    })}
                 />}
                 <Text></Text>
                 <Button 

@@ -1,12 +1,12 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { BaseIcon } from '../../common/icons/BaseIcon';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export const UserIcon = ({directToProfile} : {directToProfile: () => void}) => {
 
     return (
         <TouchableOpacity onPress={directToProfile}>
-            <BaseIcon source={require('../../../assets/BaseApp/user.png')} />
+            <Icon name="md-person-circle-outline" size={24} color="black" />
         </TouchableOpacity>
     )
 }

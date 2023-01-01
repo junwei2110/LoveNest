@@ -8,12 +8,12 @@ export const SetUpProfilePicView = styled.View`
 `
 
 export const ImageBox = styled.TouchableOpacity`
-    flex: 1;
-    height: 50%;
-    display: flex;
-    margin-left: 3%;
+    margin-left: 10px;
     background-color: white;
     opacity: 0.7;
+    position: absolute;
+    height: 40%;
+    width: 10%;
 `
 
 export const ImageBox2 = styled.TouchableOpacity`
@@ -21,6 +21,11 @@ export const ImageBox2 = styled.TouchableOpacity`
     justify-content: center;
     display: flex;
 
+`
+
+export const ReverseBox = styled.TouchableOpacity`
+    position: absolute;
+    right: 10px;
 `
 
 export const ProfilePic = styled.Image`
@@ -119,31 +124,29 @@ export const CameraView = styled.View`
 export const CameraBottomView = styled.View`
     position: absolute;
     align-items: center;
-    display: flex;
     flex-direction: row;
-    justify-content: flex-start;
     height: 15%;
     width: 100%;
     top: 85%;
     background-color: hsla(0, 0%, 0%, 0.3);    
 `
 
-export const CameraButtonView = styled.View`
-    flex: 9;
-    border-width: 0px;
-    margin-right: 2%;
-    padding: 0 5%;
+export const CameraButtonView = styled.TouchableOpacity`
+    position: absolute;
+    border-radius: 50px;
+    right: 50%;
+    border-width: 2px;
+    border-color: red;
+    padding: 5px;
+    transform: translateX(30px);
 
 `
 
 
-export const CameraButton = styled.TouchableHighlight`
-    border-radius: 15px;
-    background-color: white;
-    border-width: 3px;
-    align-items: center;
-    justify-content: center;
-    height: 30%;
+export const CameraButton = styled.View`
+    border-radius: 100px;
+    border-width: 25px;
+    border-color: white;
 `
 
 export const CloseView = styled.View`

@@ -1,13 +1,14 @@
 import React, { ReactElement } from 'react';
-import { Modal, View } from 'react-native';
+import { Modal, View, TouchableHighlight, TouchableOpacity, Dimensions } from 'react-native';
 import styled from 'styled-components/native';
 
 
-export const InPageModal = ({children, visible, size, center} : {
+export const InPageModal = ({children, visible, size, center, returnFn} : {
     children: ReactElement;
     visible: boolean;
     size?: number;
     center?: boolean;
+    returnFn?: () => void;
 }) => {
 
     return (
@@ -15,11 +16,15 @@ export const InPageModal = ({children, visible, size, center} : {
         animationType="fade"
         transparent={true}
         visible={visible}>
-            <View style={styles.translucentBG}>      
+            <TouchableOpacity 
+            style={styles.translucentBG}
+            onPress={returnFn}
+            disabled={!returnFn}
+            >      
                     <ConfirmationModalOverallView size={size} center={center}>
                         {children}
                     </ConfirmationModalOverallView>
-            </View>  
+            </TouchableOpacity>  
         </Modal>
     )
 }
@@ -39,10 +44,13 @@ type ViewProps = {
     center?: boolean
 }
 
+const viewHeight = Dimensions.get('window').height;
+const viewWidth = Dimensions.get('window').width; 
+
 export const ConfirmationModalOverallView = styled.View<ViewProps>`
     margin: ${props => props.size ? `${100 - props.size}% 5%` : `25% 5%`};
-    background-color: white;
-    height: ${props => props.size ? `${props.size}%` : `75%`};
+    background-color: #fad9c1;
+    height: ${props => props.size ? props.size/100 * viewHeight : viewHeight * 3/4};
     border-radius: 10px;
     border-width: 3px;
     ${props => props.center && "justifyContent: center"};

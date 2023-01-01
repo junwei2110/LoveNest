@@ -5,44 +5,48 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LoginStackParamList } from '../../../types';
 import { StackActions } from '@react-navigation/native';
 import Parse from "parse/react-native.js";
+import messaging from "@react-native-firebase/messaging";
 
 type Props = NativeStackScreenProps<LoginStackParamList, 'Login'>;
 
 export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
 
     const [email, setEmail] = useState("");
-    const [avatarName, setAvatarName] = useState("");
     const [password1, setPassword1] = useState("");
     const [password2, setPassword2] = useState("");
-    const [partner, setPartner] = useState("");
-
-    const userRegistration = () => {
+    
+    const userRegistration = async () => {
         if (password1 !== password2) {
             return Alert.alert('Error!', 'Please ensure re-typed password is the same')
         }
 
         const usernameVal = email;
-        const avatarNameVal = avatarName;
         const passwordVal = password1;
-        const partnerVal = partner;
+        const deviceToken = await messaging().getToken();
         
         const signUpAddParams = {
             email: usernameVal,
-            avatarName: avatarNameVal,
-            partnerId: partnerVal,
-            firstTimerProfile: true
+            firstTimerProfile: true,
+            deviceRegistered: deviceToken
         }
 
-        Parse.User.signUp(usernameVal, passwordVal, signUpAddParams)
-            .then(async (createdUser) => {
-                Alert.alert('Success!', `User was successfully created. Please verify your email to login`);
-                await Parse.User.logOut();
-                navigation.dispatch(StackActions.popToTop());
-                return true;
-            }).catch((e) => {
-                Alert.alert('Error!', e.message);
-                return false;
+        try {
+            const newUser = await Parse.User.signUp(usernameVal, passwordVal, signUpAddParams)
+
+            console.log("just signed up", newUser.id);
+            await Parse.Cloud.run("firstSignUpUserIdInstallation", {
+                userId: newUser.id,
+                deviceToken
             });
+
+            await Parse.User.logOut();
+            Alert.alert('Success!', `User was successfully created. Please verify your email to login`);
+            navigation.dispatch(StackActions.popToTop());
+
+        } catch(e: any) {
+            Alert.alert('Error!', e.message);
+        }
+        
     };
 
 
@@ -57,10 +61,6 @@ export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
                 onChangeText={(text) => setEmail(text)}
             />
             <SignUpTextInput
-                placeholder={"Avatar Name (Optional)"}
-                onChangeText={(text) => setAvatarName(text)}
-            />
-            <SignUpTextInput
                 placeholder={"Password"}
                 secureTextEntry={true}
                 onChangeText={(text) => setPassword1(text)}
@@ -69,10 +69,6 @@ export const SignUpPage = ({navigation}:{navigation: Props['navigation']}) => {
                 placeholder={"Re-type Password"}
                 secureTextEntry={true}
                 onChangeText={(text) => setPassword2(text)}
-            />
-            <SignUpTextInput
-                placeholder={"Partner's Email (Optional)"}
-                onChangeText={(text) => setPartner(text)}
             />
             <SignUpButton
                 onPress={() => userRegistration()}

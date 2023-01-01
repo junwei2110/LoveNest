@@ -1,8 +1,9 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, Button, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, Button, Image, TouchableOpacity, Alert, ViewProps, TextProps } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import Parse from 'parse/react-native.js';
+import Icon from 'react-native-vector-icons/Feather';
 
 import { 
     EventModalView, 
@@ -18,13 +19,14 @@ import { Store } from '../../data';
 import { userLoggingEnd, userLoggingInit, updateReminders } from '../../data/actions';
 
 
-export const EventModal = ({reminder}: {
-    reminder: GlobalReminderObj|null}) => {
+export const EventModal = ({reminder, setModalVisible}: {
+    reminder: GlobalReminderObj|null
+    setModalVisible?: (val: boolean) => void}) => {
 
     const [globalState, dispatch] = useContext(Store);
     const { currentUser, reminderArray } = globalState;
     const userVisible = currentUser?.id === reminder?.userOrCoupleId ? "User" : "Couple"; 
-    const checklistItems: ChecklistItem[] = reminder?.checkItems || [];
+    const checklistItems: ChecklistItem[] = reminder?.checkItems?.length ? JSON.parse(JSON.stringify(reminder?.checkItems)) : []; //Deep copy required for objects in arrays
 
     const [id, _setId] = useState(reminder?.id || "");
     const [title, setTitle] = useState(reminder?.title || "");
@@ -36,15 +38,14 @@ export const EventModal = ({reminder}: {
     const [recurrModal, setrecurrModal] = useState(false);
     const [userModal, setUserModal] = useState(false);
     const [checkItemModal, setcheckItemModal] = useState(false);
-    const [newCheckItemModal, setNewCheckItemModal] = useState(false);
     const [currentItem, setcurrentItem] = useState({id: "", task: "", isChecked: false});
     const [newCheckItem, setNewCheckItem] = useState("");
-
+    const [selectNewCheckItem, setSelectNewCheckItem] = useState(false);
 
     const handleDateChange = (dateInput: Date) => {
-
         setDateTime(dateInput.toDateString());
         setDateModal(false);
+        setrecurrModal(true);
     };
 
     const handleRecurrChange = (text: string) => {
@@ -61,14 +62,12 @@ export const EventModal = ({reminder}: {
         const checklistItems = [...checkItems];
         const newChecklist = checklistItems.map((item) => {
             if (item.id === selectedItem.id) {
-                console.log(selectedItem.id)
                 item.isChecked = !item.isChecked
                 return item
             }
 
             return item
         })
-        console.log(newChecklist);
         setCheckItems(() => [...newChecklist]);
     }
 
@@ -83,7 +82,6 @@ export const EventModal = ({reminder}: {
             ...theCurrentItem,
             task: text
         }));
-        console.log(currentItem);
     }
 
     const handleChecklistItemConfirmation = () => {
@@ -95,7 +93,6 @@ export const EventModal = ({reminder}: {
             }
             return item
         })
-        console.log(newChecklistItems);
         setCheckItems(() => [...newChecklistItems]);
         setcheckItemModal(false);
     }
@@ -108,12 +105,12 @@ export const EventModal = ({reminder}: {
             isChecked: false
         };
         setCheckItems(() => [...checkItems, newChecklistItem]);
-        setNewCheckItemModal(false);
+        setcheckItemModal(false);
+        setSelectNewCheckItem(false);
         setNewCheckItem("");
 
     }
 
-    //TODO: Update the reminder array in the Store
     const handleUpdate = async () => {
         dispatch(userLoggingInit());
         let reminderParseObj: Parse.Object<Parse.Attributes>;
@@ -138,9 +135,11 @@ export const EventModal = ({reminder}: {
 
         if (indiv === "User") {
             reminderParseObj.set('userOrCoupleId', currentUser?.id);
+            reminderParseObj.set('userOrCouple', "user");
             reminderObj = { ...reminderObj, userOrCoupleId: currentUser?.id };
         } else {
             reminderParseObj.set('userOrCoupleId', currentUser?.get('coupleId'));
+            reminderParseObj.set('userOrCouple', "couple");
             reminderObj = { ...reminderObj, userOrCoupleId: currentUser?.get('coupleId') };
         }
         reminderParseObj.set('title', title);
@@ -176,7 +175,12 @@ export const EventModal = ({reminder}: {
             }
             dispatch(updateReminders(updatedArr));
             await reminderParseObj.save();
-            console.log(updatedArr)
+
+            if (indiv === "Couple") {
+                await Parse.Cloud.run("reminderUpdate", {
+                    partnerId: currentUser?.get("partnerId")
+                });
+            }
             
             dispatch(userLoggingEnd());
             Alert.alert("Reminder Saved");
@@ -184,6 +188,48 @@ export const EventModal = ({reminder}: {
             console.warn(e.message);
             dispatch(userLoggingEnd());
         }
+    }
+
+    const handleDelete = async () => {   
+        try {
+            dispatch(userLoggingInit());
+            const reminderParseQuery = new Parse.Query("Reminder");
+            const reminderParseObj = await reminderParseQuery.get(id);
+            reminderParseObj.set("completionStatus", true);
+            await reminderParseObj.save();
+            setModalVisible?.(false);
+
+            if (reminderArray?.length) {
+                const newReminderArr = [...reminderArray].filter((rem) => {
+                    return rem.id !== id
+                });
+
+                dispatch(updateReminders(newReminderArr));
+                //TODO: Add animation to remove the reminder
+            };
+
+            if (indiv === "Couple") {
+                await Parse.Cloud.run("reminderUpdate", {
+                    partnerId: currentUser?.get("partnerId")
+                });
+            }
+
+            dispatch(userLoggingEnd());
+
+        } catch(e: any) {
+            dispatch(userLoggingEnd());
+            Alert.alert(e.message);
+        }
+
+    };
+
+    const handleDeleteCheckItem = () => {
+        const checklistItems = [...checkItems];
+        const newChecklistItems = checklistItems.filter((item) => {
+            return item.id !== currentItem.id
+        })
+        setCheckItems(() => [...newChecklistItems]);
+        setcheckItemModal(false);
     }
 
 
@@ -200,9 +246,10 @@ export const EventModal = ({reminder}: {
             <InPageModal 
             visible={recurrModal}
             size={30}
-            center>
+            center
+            returnFn={() => setrecurrModal(false)}>
                 <RadioButtonArray 
-                    valueArray={["One-Time", "Week", "Month", "Annual"]}
+                    valueArray={["Once", "Week", "Month", "Annual"]}
                     value={recurrence}
                     setValue={handleRecurrChange}
                     orientation={"vertical"}
@@ -212,7 +259,8 @@ export const EventModal = ({reminder}: {
             <InPageModal 
             visible={userModal}
             size={25}
-            center>
+            center
+            returnFn={() => setUserModal(false)}>
                 <RadioButtonArray 
                     valueArray={["User", "Couple"]}
                     value={indiv}
@@ -222,48 +270,37 @@ export const EventModal = ({reminder}: {
             </InPageModal>
 
             <InPageModal 
-            visible={newCheckItemModal}
-            size={25}
-            center>
-                <>
-                <TextInput
-                    value={newCheckItem}
-                    onChangeText={(text) => setNewCheckItem(text)}
-                    style={{borderBottomWidth: 1}}
-                    />
-                <Text></Text>
-                <View style={styles.textInput}>
-                    <Button 
-                        title={"Confirm"} 
-                        onPress={handleNewChecklistItemConfirmation}
-                        />
-                    <Button 
-                        title={"Cancel"} 
-                        onPress={() => setNewCheckItemModal(false)}
-                        />
-                </View>
-                </>
-            </InPageModal>
-
-            <InPageModal 
             visible={checkItemModal}
-            size={25}
-            center>
+            size={30}
+            center
+            returnFn={() => setcheckItemModal(false)}>
                 <>
                 <TextInput
-                    value={currentItem?.task}
-                    onChangeText={(text) => handleChecklistItemDesc(text)}
+                    value={selectNewCheckItem ? newCheckItem : currentItem?.task}
+                    onChangeText={(text) => {
+                        selectNewCheckItem ? setNewCheckItem(text) : handleChecklistItemDesc(text)
+                    }}
+                    style={{borderBottomWidth: 1, marginHorizontal: 20, paddingVertical: 0}}
                     />
-                <View style={styles.textInput}>
-                    <Button 
-                        title={"Confirm"} 
-                        onPress={handleChecklistItemConfirmation}
-                        />
-                    <Button 
-                        title={"Cancel"} 
-                        onPress={() => setcheckItemModal(false)}
-                        />
+
+                <View style={styles.confirmDeleteContainer as ViewProps}>
+                    <TouchableOpacity
+                    style={styles.confirmBtn} 
+                    onPress={selectNewCheckItem ? handleNewChecklistItemConfirmation : handleChecklistItemConfirmation}>
+                        <Text style={{color: "black"}}>Confirm</Text>
+                    </TouchableOpacity>
+                    {!selectNewCheckItem ? 
+                    <TouchableOpacity
+                    style={styles.deleteBtn}  
+                    onPress={() => {
+                        handleDeleteCheckItem()
+                        setcheckItemModal(false);
+                    }}>
+                        <Text style={{color: "black"}}>Delete Item</Text>
+                    </TouchableOpacity>
+                    : null}
                 </View>
+
                 </>
             </InPageModal>
 
@@ -273,15 +310,15 @@ export const EventModal = ({reminder}: {
             placeholder={"Event Title"}
             onChangeText={(text) => setTitle(text)}
             />
-            <View style={styles.flexContainer}>
+            <View style={styles.flexContainer as ViewProps}>
                 <FlexBox
                     flexRatio={2}
                     onPress={() => setDateModal(true)}
                     centered
                 >
-                    <Text>Date / Time</Text>
-                    <TextBox>
-                        {dateTime}
+                    <Text>Date / Recurrence</Text>
+                    <TextBox numberOfLines={1}>
+                        {`${dateTime} / ${recurrence}`}
                     </TextBox>
                 </FlexBox>
 
@@ -289,76 +326,83 @@ export const EventModal = ({reminder}: {
                     flexRatio={1}
                     last
                     centered
-                    onPress={() => setrecurrModal(true)}
-                >
-                    <Text>Recurrence</Text>
-                    <TextBox>
-                        {recurrence}
-                    </TextBox>
-                </FlexBox>
-            </View>
-            <View style={styles.flexContainer}>
-                <FlexBox
-                    flexRatio={1}
-                    centered
-                >
-                    <Text>Visible to</Text>           
-                </FlexBox>
-                <FlexBox
-                    flexRatio={2}
-                    last
                     onPress={() => setUserModal(true)}
                 >
-                    <TextBox>{indiv}</TextBox>
+                    <Text>Visible to</Text>
+                    <TextBox>
+                        {indiv}
+                    </TextBox>
                 </FlexBox>
-        
             </View>
-            <Text>To-Do-List</Text>
-            <ReminderChecklist>
-                
-                {checkItems.map((item, id) => (
+            <Text></Text>
+            <Text>
+                <Icon name="list" size={18} /> To-Do-List
+            </Text>
+            <View style={{maxHeight: "45%", width: "100%"}}>
+                <ReminderChecklist> 
+                    {checkItems.map((item, id) => (        
+                        <View key={id} style={styles.checklistContainer as ViewProps}>                        
+                            <FlexBox
+                                flexRatio={9}
+                                onPress={() => handleSelectedItem(item)}
+                            >
+                                <Text 
+                                style={styles.textInput as ViewProps}
+                                numberOfLines={1}>
+                                    {item?.task}
+                                </Text>           
+                            </FlexBox>                        
+                            <FlexBox
+                                flexRatio={1}
+                                last
+                            >
+                                <BouncyCheckbox 
+                                    size={20}
+                                    isChecked={item?.isChecked}
+                                    disableBuiltInState
+                                    onPress={() => handleChecklistIsChecked(item)}
+                                    fillColor="red"
+                                />
+                            </FlexBox>    
+                        </View>
                     
-                    <View key={id} style={styles.flexContainer}>                        
-                        
-                        <FlexBox
-                            flexRatio={9}
-                            onPress={() => handleSelectedItem(item)}
-                        >
-                            <Text style={styles.textInput}>{item?.task}</Text>           
-                        </FlexBox>                        
-                        <FlexBox
-                            flexRatio={1}
-                            last
-                        >
-                            <BouncyCheckbox 
-                                size={20}
-                                isChecked={item?.isChecked}
-                                onPress={() => handleChecklistIsChecked(item)}
-                            />
-                        </FlexBox>
-                
-                    </View>
-                
-                ))}
-                
-                <ChecklistFlexBox onPress={() => setNewCheckItemModal(true)}>
-                    <ResizeImage 
-                        source={require("../../../assets/BaseApp/plus.png")}
-                        resizeMode={"contain"}
-                        />
-                </ChecklistFlexBox>
+                    ))}
 
-            </ReminderChecklist>
-            <Button 
-                title={"Update"} 
-                onPress={handleUpdate}
-                />
+                </ReminderChecklist>
+            </View>
+            <ChecklistFlexBox onPress={() => {
+                setcheckItemModal(true);
+                setSelectNewCheckItem(true);
+            }}>
+                <ResizeImage 
+                    source={require("../../../assets/BaseApp/plus.png")}
+                    resizeMode={"contain"}
+                    />
+            </ChecklistFlexBox>
 
+            
+
+            <View style={reminder ? SingleDoubleButtonStyles.doubleButton as ViewProps
+                : SingleDoubleButtonStyles.singleButton as ViewProps}>
+                <TouchableOpacity
+                style={reminder? SingleDoubleButtonStyles.doubleUpdateBtn : SingleDoubleButtonStyles.singleUpdateBtn}
+                onPress={handleUpdate}>
+                    <Text style={buttonStyles.updateText as TextProps}>Update</Text>
+                </TouchableOpacity>
+                {reminder ? 
+                <TouchableOpacity
+                style={buttonStyles.delete}
+                onPress={handleDelete}>
+                    <Text style={buttonStyles.deleteText as TextProps}>Delete</Text>
+                </TouchableOpacity> : null}              
+            </View>
         </EventModalView>
+        
 
 
     )
 }
+
 
 export type GlobalReminderObj = {
     id?: string;
@@ -376,30 +420,107 @@ export type ChecklistItem = {
     isChecked: boolean;
 }
 
-type StylesProps = {
+
+const styles = {
     flexContainer: {
-        display: "flex" | "none" | undefined;
-        flexDirection: "row" | "column";
-        margin: string | number;
+        display: "flex",
+        flexDirection: "row",
+        margin: "5%"
+    },
+
+    checklistContainer: {
+        display: "flex",
+        flexDirection: "row",
+        marginVertical: "3%",
+        marginHorizontal: "5%"
+    },
+
+    confirmDeleteContainer: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: "5%",
+        marginHorizontal: "5%",
+        
+    },
+
+    confirmBtn: {
+        borderWidth: 1,
+        padding: 10,
+        borderRadius: 10,
+        backgroundColor: "#f9caa7",
+    },
+    deleteBtn: {
+        borderWidth: 1,
+        padding: 10,
+        borderRadius: 10,
+        backgroundColor: "#fe9c8f",
     },
 
     textInput: {
-        display: "flex" | "none" | undefined;
-        flexDirection: "row" | "column" | "row-reverse" ;
+        display: "flex",
+        flexDirection: "row",
+        borderWidth: 1,
+        paddingVertical: 10,
+        paddingLeft: 20,
+        borderRadius: 25,
+         
     }
 
 }
 
-const styles: StylesProps = {
-    flexContainer: {
-        display: "flex",
+const buttonStyles = {
+    buttonContainer: {
+        display: "flex", 
         flexDirection: "row",
-        margin: "5%",
+        position: "absolute",
+        borderWidth: 1,
+        bottom: "7%"
     },
 
-    textInput: {
-        display: "flex",
-        flexDirection: "row-reverse" 
-    }
+    update: {
+        borderWidth: 1,
+        padding: 15,
+        borderRadius: 0,
+        backgroundColor: "#f9caa7",
 
+    },
+    delete: {
+        borderWidth: 1,
+        padding: 15,
+        borderRadius: 0,
+        backgroundColor: "#fe9c8f",
+        width: "50%"
+
+        
+    },
+    updateText: {
+        color: "black",
+        textAlign: "center",
+    },
+    deleteText: {
+        color: "black",
+        textAlign: "center",
+    }
+}
+
+const SingleDoubleButtonStyles = {
+    singleButton: {
+      ...buttonStyles.buttonContainer,
+      width: "45%"  
+    },
+    doubleButton: {
+        ...buttonStyles.buttonContainer,
+        width: "90%"  
+    },
+    singleUpdateBtn: {
+        ...buttonStyles.update,
+        width: "100%"  
+
+    },
+    doubleUpdateBtn: {
+        ...buttonStyles.update,
+        width: "50%"  
+
+    },
 }
