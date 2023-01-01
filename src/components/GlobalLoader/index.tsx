@@ -8,7 +8,6 @@ export const GlobalLoader = () => {
 
     const [globalState, dispatch] = useContext(Store);
     const { loading } = globalState;
-    console.log("I am loading", loading);
 
     if (loading) {
         return (

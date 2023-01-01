@@ -21,4 +21,4 @@ export type UserOverallStackParamList = {
   PhotoTaken: undefined;
 };
 
-export type OverallParamList = UserOverallStackParamList & UserStackParamList & LoginStackParamList
+export type OverallParamList = UserOverallStackParamList & UserStackParamList & LoginStackParamList;
