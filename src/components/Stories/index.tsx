@@ -3,7 +3,7 @@ import React, { MutableRefObject, useContext, useEffect, useRef, useState } from
 import { View, Text, Button, KeyboardAvoidingView, Dimensions, Keyboard } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useHeaderHeight } from '@react-navigation/elements';
-
+import { CHAT_APP_URL } from 'react-native-dotenv';
 import { Store } from '../../data';
 import { SetUpStackParamList } from '../PhotoModal/PhotoModal';
 
@@ -23,6 +23,8 @@ export const Stories = () => {
 
     const WebviewRef = useRef<View>(null);
     const [viewStyle, setStyle] = useState<Record<string, any>>({ height: "100%" });
+    const [error, setError] = useState(false);
+
 
     useEffect(() => {
 
@@ -59,15 +61,17 @@ export const Stories = () => {
 
     return (
         <View ref={WebviewRef} style={viewStyle} collapsable={false}>
-            {userId !== coupleId ? 
-                <WebView
-                    source={{ uri: 'http://localhost:3000' }}
+            {!error && 
+                (userId !== coupleId ? 
+                    <WebView
+                    source={{ uri: CHAT_APP_URL }}
                     injectedJavaScript={loadChat}
-                    scrollEnabled={false}
-                />        
-            :
-            <EmptyView {...{ partnerId }} />
-            }
+                    onError={() => setError(true)}
+                    />        
+                :
+                <EmptyView {...{ partnerId }} />
+            )}
+            {error && <ErrorView />}
         </View>
     )
 }
@@ -90,6 +94,18 @@ const EmptyView = ({partnerId}: {partnerId: string}) => {
                 :
                 <Text>Pending for your partner's response</Text> 
             }
+            </View>
+            
+    )
+
+}
+
+const ErrorView = () => {
+
+
+    return (   
+            <View style={{height: "100%", width: "100%", justifyContent: "center", alignItems: "center"}}>
+                <Text>There is an error with the webview. Please try again later.</Text> 
             </View>
             
     )

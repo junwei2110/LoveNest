@@ -10,4 +10,5 @@ declare module 'react-native-dotenv' {
     export const PACKAGE_NAME: string;
     export const APP_NAME: string;
     export const GCM_SENDER_ID: string;
+    export const CHAT_APP_URL: string;
   }

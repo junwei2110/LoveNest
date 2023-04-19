@@ -41,13 +41,13 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
             completionStatus,
         }
 
-        const oneDayMS = 24 * 60 * 60* 1000;
+        const oneDayMS = 24 * 60 * 60 * 1000;
         switch (recurrence) {
             case "Once":
             case "One-Time":
                 if (dateTime.getTime() < (currentDateTime.getTime() - oneDayMS)) {
                     reminder.set('completionStatus', true);
-                    reminder.save().then(() => console.log("reminder saved"));
+                    reminder.save();
                 } else {
                     //globalReminderObj.push(newReminderObj);
                     return newReminderObj;
@@ -57,24 +57,24 @@ export const sortReminders = (reminderArray: Parse.Object<Parse.Attributes>[]) =
                     (dateTime.getMonth() === currentDateTime.getMonth() && 
                         dateTime.getDate() < currentDateTime.getDate())) {
 
-                            const newYear = currentDateTime.getFullYear() + 1;
-                            dateTime.setFullYear(newYear);
-                            reminder.set('dateTime', dateTime.toDateString());
-                            reminder.save();
-                            newReminderObj = {...newReminderObj, dateTime}
-                            //globalReminderObj.push(newReminderObj);
-                            return newReminderObj;
-                            
-                        } else {
+                    const newYear = currentDateTime.getFullYear() + 1;
+                    dateTime.setFullYear(newYear);
+                    reminder.set('dateTime', dateTime.toDateString());
+                    reminder.save();
+                    newReminderObj = {...newReminderObj, dateTime}
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
+                    
+                } else {
 
-                            const newYear = currentDateTime.getFullYear();
-                            dateTime.setFullYear(newYear);
-                            reminder.set('dateTime', dateTime.toDateString());
-                            reminder.save();
-                            newReminderObj = {...newReminderObj, dateTime}
-                            //globalReminderObj.push(newReminderObj);
-                            return newReminderObj;
-                        }
+                    const newYear = currentDateTime.getFullYear();
+                    dateTime.setFullYear(newYear);
+                    reminder.set('dateTime', dateTime.toDateString());
+                    reminder.save();
+                    newReminderObj = {...newReminderObj, dateTime}
+                    //globalReminderObj.push(newReminderObj);
+                    return newReminderObj;
+                }
             
             case "Month":
                 if (dateTime.getDate() < currentDateTime.getDate()) {
